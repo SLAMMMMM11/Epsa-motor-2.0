@@ -1,0 +1,6 @@
+{
+  "name": "EPSA Motor Torijo Bajaj",
+  "description": "Web oficial de EPSA Motor Torijo Bajaj. Concesionario autorizado de motocars Torito Bajaj en Lima Norte y Callao (Puente Piedra, Comas y Ventanilla). Catálogo en línea, reserva de citas y asesor inteligente.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

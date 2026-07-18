@@ -1,0 +1,98 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-display: "Space Grotesk", system-ui, sans-serif;
+  --font-serif: "Playfair Display", Georgia, serif;
+
+  --color-brand-primary: #2563eb;  /* Premium Cobalt / Royal Blue */
+  --color-brand-accent: #3b82f6;   /* Rich Sapphire Blue */
+  --color-brand-dark: #0a1120;     /* Deep Steel Obsidian */
+  --color-brand-card: #131c2e;     /* Luxury Dark Slate Blue Card */
+  --color-brand-border: #1e2e4a;   /* Subtle Steel Blue Border */
+}
+
+/* Base resets & premium layout transitions */
+body {
+  background-color: #060a13;       /* Pure Obsidian Navy Base */
+  color: #f1f5f9;                  /* Frosted Platinum Primary Text */
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Premium Minimalist Button Styles */
+.btn-primary {
+  background-color: #2563eb;       /* Royal Blue Primary */
+  color: #ffffff;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 11px;
+  border: 1px solid #2563eb;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 14px -4px rgba(37, 99, 235, 0.4);
+}
+
+.btn-primary:hover {
+  background-color: transparent;
+  color: #3b82f6;
+  border-color: #3b82f6;
+  box-shadow: 0 6px 20px -2px rgba(59, 130, 246, 0.2);
+}
+
+.btn-secondary {
+  background-color: #131c2e;
+  color: #e2e8f0;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 11px;
+  border: 1px solid #1e2e4a;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-secondary:hover {
+  border-color: #3b82f6;
+  color: #ffffff;
+  background-color: #1a263e;
+}
+
+/* Refined interactive card shadows */
+.premium-card {
+  background-color: #131c2e;
+  border: 1px solid #1e2e4a;
+  box-shadow: 0 4px 20px -8px rgba(0, 0, 0, 0.3);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.premium-card:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 16px 32px -12px rgba(37, 99, 235, 0.25);
+  transform: translateY(-2px);
+}
+
+/* Infinite sliding marquee utilities */
+@utility animate-marquee {
+  animation: marquee 40s linear infinite;
+}
+
+@utility animate-marquee-reverse {
+  animation: marquee-reverse 40s linear infinite;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes marquee-reverse {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+.pause-marquee:hover .animate-marquee,
+.pause-marquee:hover .animate-marquee-reverse {
+  animation-play-state: paused;
+}
+

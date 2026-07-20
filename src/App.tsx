@@ -8,9 +8,10 @@ import Logo from "./components/Logo";
 import AmbientBackground from "./components/AmbientBackground";
 import ModelComparer from "./components/ModelComparer";
 import EarningCalculator from "./components/EarningCalculator";
-import { TESTIMONIALS } from "./data";
+import AboutUs from "./components/AboutUs";
+import { TESTIMONIALS, CONTACT, BRANCHES } from "./data";
 import { motion, AnimatePresence } from "motion/react";
-import { MessageSquare, MessageCircle, Wrench, FileText, Sparkles, Award, Star, PhoneCall, Check } from "lucide-react";
+import { MessageSquare, MessageCircle, FileText, Sparkles, Award, Star, PhoneCall, Check } from "lucide-react";
 
 // Web Audio API Synthesizer for a premium, low-volume double chime
 const playWspChime = () => {
@@ -64,7 +65,7 @@ export default function App() {
 
   useEffect(() => {
     const triggerSparkles = () => {
-      const colors = ["#25d366", "#a3f3be", "#fde047", "#ffffff"];
+      const colors = ["#25d366", "#a3f3be", "#fde047", "#131c2e"];
       const count = 4 + Math.floor(Math.random() * 3); // 4 to 6 sparkles
       const newSparkles = Array.from({ length: count }).map((_, i) => {
         const angle = Math.random() * Math.PI * 2;
@@ -119,71 +120,64 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#060a13] text-zinc-100 font-sans flex flex-col justify-between selection:bg-[#2563eb]/30 selection:text-white relative">
+    <div className="min-h-screen bg-[#060a13] text-white font-sans flex flex-col justify-between selection:bg-[#2563eb]/30 selection:text-white relative">
       <AmbientBackground />
-      
+
       {/* Premium Minimalist Navbar */}
       <header className="sticky top-0 z-40 bg-[#060a13]/90 backdrop-blur-md border-b border-[#1e2e4a] px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          
-          {/* Logo with clean branding */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 sm:gap-4">
             <Logo className="w-9 h-9 shrink-0 text-white" />
-            <div>
-              <h1 className="font-display font-bold text-sm tracking-tight text-white uppercase">
-                EPSA Motor <span className="text-[#60a5fa] font-serif italic lowercase font-normal">Torijo</span>
+            <div className="hidden sm:block h-8 w-px bg-[#1e2e4a]" aria-hidden="true" />
+            <div className="flex items-center gap-2 sm:gap-3">
+              <img
+                src="/assets/media/images/RE_torito.png"
+                alt="Torito Bajaj"
+                className="h-7 sm:h-8 w-auto object-contain opacity-95"
+              />
+              <img
+                src="/assets/media/images/bajaj_favorita.png"
+                alt="Bajaj favorita del Perú"
+                className="h-7 sm:h-8 w-auto object-contain opacity-95"
+              />
+            </div>
+            <div className="hidden md:block">
+              <h1 className="font-display font-bold text-sm tracking-tight text-white uppercase leading-none">
+                EPSA Motor
               </h1>
-              <p className="text-[9px] text-[#60a5fa] uppercase tracking-widest font-bold">Concesionario Autorizado Bajaj</p>
+              <p className="text-[9px] text-[#60a5fa] uppercase tracking-widest font-bold mt-0.5">
+                Concesionario Autorizado Bajaj
+              </p>
             </div>
           </div>
 
-          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8 text-[11px] font-bold uppercase tracking-wider text-zinc-400">
-            <button
-              onClick={() => scrollToSection("hero-section")}
-              className="hover:text-[#60a5fa] transition-colors cursor-pointer"
-            >
+            <button onClick={() => scrollToSection("hero-section")} className="hover:text-[#60a5fa] transition-colors cursor-pointer">
               Inicio
             </button>
-            <button
-              onClick={() => scrollToSection("benefits-section")}
-              className="hover:text-[#60a5fa] transition-colors cursor-pointer"
-            >
+            <button onClick={() => scrollToSection("benefits-section")} className="hover:text-[#60a5fa] transition-colors cursor-pointer">
               Beneficios
             </button>
-            <button
-              onClick={() => scrollToSection("catalog-section")}
-              className="hover:text-[#60a5fa] transition-colors cursor-pointer"
-            >
+            <button onClick={() => scrollToSection("about-section")} className="hover:text-[#60a5fa] transition-colors cursor-pointer">
+              Nosotros
+            </button>
+            <button onClick={() => scrollToSection("catalog-section")} className="hover:text-[#60a5fa] transition-colors cursor-pointer">
               Modelos
             </button>
-            <button
-              onClick={() => scrollToSection("comparer-section")}
-              className="hover:text-[#60a5fa] transition-colors cursor-pointer"
-            >
+            <button onClick={() => scrollToSection("comparer-section")} className="hover:text-[#60a5fa] transition-colors cursor-pointer">
               Comparar
             </button>
-            <button
-              onClick={() => scrollToSection("calculator-section")}
-              className="hover:text-[#60a5fa] transition-colors cursor-pointer"
-            >
+            <button onClick={() => scrollToSection("calculator-section")} className="hover:text-[#60a5fa] transition-colors cursor-pointer">
               Rentabilidad
             </button>
-            <button
-              onClick={() => scrollToSection("booking-section")}
-              className="hover:text-[#60a5fa] transition-colors cursor-pointer"
-            >
+            <button onClick={() => scrollToSection("booking-section")} className="hover:text-[#60a5fa] transition-colors cursor-pointer">
               Citas
             </button>
-            <button
-              onClick={() => scrollToSection("branches-section")}
-              className="hover:text-[#60a5fa] transition-colors cursor-pointer"
-            >
+            <button onClick={() => scrollToSection("branches-section")} className="hover:text-[#60a5fa] transition-colors cursor-pointer">
               Sedes
             </button>
           </nav>
 
-          {/* Action button */}
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsChatOpen(true)}
@@ -220,10 +214,12 @@ export default function App() {
             >
               <span className="text-[#60a5fa] text-xs font-bold uppercase tracking-widest block mb-2">Respaldo Integral</span>
               <h2 className="text-3xl sm:text-4xl font-display font-bold text-white tracking-tight leading-tight">
-                ¿Por qué elegir EPSA Motor Torijo?
+                ¿Por qué elegir EPSA Motor?
               </h2>
               <p className="text-zinc-400 mt-4 text-xs md:text-sm leading-relaxed font-sans">
-                Acompañamos tu desarrollo comercial de principio a fin, combinando el soporte directo de fábrica Bajaj con un modelo de financiamiento sumamente accesible.
+                <strong className="text-white font-medium">{CONTACT.yearsInMarketLabel}</strong> acompañando
+                emprendedores en Lima y Callao. Venta y financiamiento de Torito Bajaj con respaldo formal (RUC{" "}
+                {CONTACT.ruc}).
               </p>
             </motion.div>
 
@@ -250,11 +246,11 @@ export default function App() {
                 }}
                 className="bg-[#131c2e]/80 backdrop-blur-sm border border-[#1e2e4a] p-6 rounded-sm space-y-4 hover:border-[#3b82f6] hover:shadow-[0_0_25px_rgba(37,99,235,0.15)] transition-all duration-500 shadow-sm group"
               >
-                <div className="w-10 h-10 rounded-sm bg-[#1a263e] border border-[#1e2e4a] flex items-center justify-center text-[#60a5fa] shadow-xs group-hover:scale-110 transition-transform duration-300">
+                <div className="w-10 h-10 rounded-xl bg-[#1a263e] border border-[#1e2e4a] flex items-center justify-center text-[#60a5fa] shadow-xs group-hover:scale-110 transition-transform duration-300">
                   <Award className="w-5 h-5" />
                 </div>
-                <h3 className="text-sm font-bold text-white uppercase tracking-wider">Crédito Directo Flexible</h3>
-                <p className="text-xs text-zinc-400 leading-relaxed">
+                <h3 className="text-sm font-bold text-[#f1f5f9] uppercase tracking-wider">Crédito Directo Flexible</h3>
+                <p className="text-xs text-[#a1a1aa] leading-relaxed">
                   Evaluamos tu historial crediticio con tu DNI y un recibo de servicios. Diseñamos cuotas a tu medida para facilitar el pago progresivo.
                 </p>
               </motion.div>
@@ -267,16 +263,16 @@ export default function App() {
                 }}
                 className="bg-[#131c2e]/80 backdrop-blur-sm border border-[#1e2e4a] p-6 rounded-sm space-y-4 hover:border-[#3b82f6] hover:shadow-[0_0_25px_rgba(37,99,235,0.15)] transition-all duration-500 shadow-sm group"
               >
-                <div className="w-10 h-10 rounded-sm bg-[#1a263e] border border-[#1e2e4a] flex items-center justify-center text-[#60a5fa] shadow-xs group-hover:scale-110 transition-transform duration-300">
+                <div className="w-10 h-10 rounded-xl bg-[#1a263e] border border-[#1e2e4a] flex items-center justify-center text-[#60a5fa] shadow-xs group-hover:scale-110 transition-transform duration-300">
                   <FileText className="w-5 h-5" />
                 </div>
-                <h3 className="text-sm font-bold text-white uppercase tracking-wider">Trámite de Placa Sunarp</h3>
-                <p className="text-xs text-zinc-400 leading-relaxed">
+                <h3 className="text-sm font-bold text-[#f1f5f9] uppercase tracking-wider">Trámite de Placa Sunarp</h3>
+                <p className="text-xs text-[#a1a1aa] leading-relaxed">
                   Gestionamos el registro de placa y tarjeta de propiedad de manera gratuita y veloz con la compra de tu mototaxi nuevo.
                 </p>
               </motion.div>
 
-              {/* Card 3: Servicio técnico */}
+              {/* Card 3: Sedes */}
               <motion.div
                 variants={{
                   hidden: { opacity: 0, y: 30 },
@@ -284,16 +280,16 @@ export default function App() {
                 }}
                 className="bg-[#131c2e]/80 backdrop-blur-sm border border-[#1e2e4a] p-6 rounded-sm space-y-4 hover:border-[#3b82f6] hover:shadow-[0_0_25px_rgba(37,99,235,0.15)] transition-all duration-500 shadow-sm group"
               >
-                <div className="w-10 h-10 rounded-sm bg-[#1a263e] border border-[#1e2e4a] flex items-center justify-center text-[#60a5fa] shadow-xs group-hover:scale-110 transition-transform duration-300">
-                  <Wrench className="w-5 h-5" />
+                <div className="w-10 h-10 rounded-xl bg-[#1a263e] border border-[#1e2e4a] flex items-center justify-center text-[#60a5fa] shadow-xs group-hover:scale-110 transition-transform duration-300">
+                  <Sparkles className="w-5 h-5" />
                 </div>
-                <h3 className="text-sm font-bold text-white uppercase tracking-wider">Taller Oficial Autorizado</h3>
-                <p className="text-xs text-zinc-400 leading-relaxed">
-                  Personal altamente calificado y stock permanente de repuestos originales Bajaj para garantizar la máxima durabilidad de tu herramienta.
+                <h3 className="text-sm font-bold text-[#f1f5f9] uppercase tracking-wider">3 Sedes en Lima y Callao</h3>
+                <p className="text-xs text-[#a1a1aa] leading-relaxed">
+                  Atiéndete en Comas, Ventanilla o Puente Piedra para ver unidades, cotizar y evaluar tu crédito con un asesor.
                 </p>
               </motion.div>
 
-              {/* Card 4: Personalización */}
+              {/* Card 4: Atención comercial */}
               <motion.div
                 variants={{
                   hidden: { opacity: 0, y: 30 },
@@ -301,12 +297,12 @@ export default function App() {
                 }}
                 className="bg-[#131c2e]/80 backdrop-blur-sm border border-[#1e2e4a] p-6 rounded-sm space-y-4 hover:border-[#3b82f6] hover:shadow-[0_0_25px_rgba(37,99,235,0.15)] transition-all duration-500 shadow-sm group"
               >
-                <div className="w-10 h-10 rounded-sm bg-[#1a263e] border border-[#1e2e4a] flex items-center justify-center text-[#60a5fa] shadow-xs group-hover:scale-110 transition-transform duration-300">
-                  <Sparkles className="w-5 h-5" />
+                <div className="w-10 h-10 rounded-xl bg-[#1a263e] border border-[#1e2e4a] flex items-center justify-center text-[#60a5fa] shadow-xs group-hover:scale-110 transition-transform duration-300">
+                  <MessageSquare className="w-5 h-5" />
                 </div>
-                <h3 className="text-sm font-bold text-white uppercase tracking-wider">Carpas y Accesorios</h3>
-                <p className="text-xs text-zinc-400 leading-relaxed">
-                  Equipamos tu unidad con carpas reforzadas de alto tránsito y personalización de luces para trabajar con absoluto confort.
+                <h3 className="text-sm font-bold text-[#f1f5f9] uppercase tracking-wider">Asesoría Comercial</h3>
+                <p className="text-xs text-[#a1a1aa] leading-relaxed">
+                  Cotiza por WhatsApp, agenda una prueba de manejo o visita la sede. Te ayudamos a elegir el modelo ideal para tu negocio.
                 </p>
               </motion.div>
 
@@ -314,6 +310,9 @@ export default function App() {
 
           </div>
         </section>
+
+        {/* QUIÉNES SOMOS — fotos oficiales */}
+        <AboutUs />
 
         {/* ONLINE CATALOG */}
         <Catalog onSelectModelForBooking={handleSelectModelForBooking} />
@@ -333,11 +332,11 @@ export default function App() {
             {/* Header */}
             <div className="text-center max-w-2xl mx-auto">
               <span className="text-[#60a5fa] text-xs font-bold uppercase tracking-widest block mb-2">Opiniones de Clientes</span>
-              <h2 className="text-3xl sm:text-4xl font-display font-bold text-white tracking-tight leading-tight">
+              <h2 className="text-3xl sm:text-4xl font-display font-bold text-[#f1f5f9] tracking-tight leading-tight">
                 Historias de Éxito Comercial
               </h2>
-              <p className="text-zinc-400 mt-4 text-xs md:text-sm leading-relaxed font-sans">
-                La experiencia de emprendedores locales que consolidaron su herramienta de trabajo confiando en el servicio técnico y financiamiento de EPSA Motor.
+              <p className="text-[#a1a1aa] mt-4 text-xs md:text-sm leading-relaxed font-sans">
+                La experiencia de emprendedores locales que consolidaron su herramienta de trabajo confiando en la venta y el financiamiento de EPSA Motor.
               </p>
             </div>
           </div>
@@ -355,7 +354,7 @@ export default function App() {
                 {[...TESTIMONIALS, ...TESTIMONIALS].map((review, idx) => (
                   <div
                     key={`r1-${idx}`}
-                    className="w-[320px] sm:w-[380px] bg-[#131c2e] border border-[#1e2e4a] p-6 rounded-sm flex flex-col justify-between space-y-4 hover:border-[#3b82f6] hover:shadow-[0_0_20px_rgba(59,130,246,0.12)] transition-all duration-300 group shrink-0"
+                    className="w-[320px] sm:w-[380px] bg-[#131c2e] border border-[#1e2e4a] p-6 rounded-xl flex flex-col justify-between space-y-4 hover:border-[#3b82f6] hover:shadow-[0_0_20px_rgba(59,130,246,0.12)] transition-all duration-300 group shrink-0"
                   >
                     <div className="space-y-3">
                       <div className="flex justify-between items-center">
@@ -365,22 +364,22 @@ export default function App() {
                           ))}
                         </div>
                         {review.tag && (
-                          <span className="bg-[#1a263e] text-[#60a5fa] border border-[#1e2e4a] text-[9px] font-bold px-2 py-0.5 rounded-sm uppercase tracking-wider">
+                          <span className="bg-[#1a263e] text-[#60a5fa] border border-[#1e2e4a] text-[9px] font-bold px-2 py-0.5 rounded-xl uppercase tracking-wider">
                             {review.tag}
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-zinc-300 leading-relaxed italic font-sans">
+                      <p className="text-xs text-[#a1a1aa] leading-relaxed italic font-sans">
                         "{review.text}"
                       </p>
                     </div>
                     <div className="pt-3 border-t border-[#1e2e4a] flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-sm ${review.avatarBg || 'bg-[#1a263e]'} border border-[#1e2e4a] flex items-center justify-center font-bold text-white text-xs`}>
+                      <div className={`w-8 h-8 rounded-xl ${review.avatarBg || 'bg-[#1a263e]'} border border-[#1e2e4a] flex items-center justify-center font-bold text-[#f1f5f9] text-xs`}>
                         {review.initials}
                       </div>
                       <div>
-                        <h4 className="text-xs font-bold text-white">{review.name}</h4>
-                        <span className="text-[10px] text-zinc-400 block font-sans">{review.association}</span>
+                        <h4 className="text-xs font-bold text-[#f1f5f9]">{review.name}</h4>
+                        <span className="text-[10px] text-[#a1a1aa] block font-sans">{review.association}</span>
                       </div>
                     </div>
                   </div>
@@ -395,7 +394,7 @@ export default function App() {
                 {[...TESTIMONIALS.slice().reverse(), ...TESTIMONIALS.slice().reverse()].map((review, idx) => (
                   <div
                     key={`r2-${idx}`}
-                    className="w-[320px] sm:w-[380px] bg-[#131c2e] border border-[#1e2e4a] p-6 rounded-sm flex flex-col justify-between space-y-4 hover:border-[#3b82f6] hover:shadow-[0_0_20px_rgba(59,130,246,0.12)] transition-all duration-300 group shrink-0"
+                    className="w-[320px] sm:w-[380px] bg-[#131c2e] border border-[#1e2e4a] p-6 rounded-xl flex flex-col justify-between space-y-4 hover:border-[#3b82f6] hover:shadow-[0_0_20px_rgba(59,130,246,0.12)] transition-all duration-300 group shrink-0"
                   >
                     <div className="space-y-3">
                       <div className="flex justify-between items-center">
@@ -405,22 +404,22 @@ export default function App() {
                           ))}
                         </div>
                         {review.tag && (
-                          <span className="bg-[#1a263e] text-[#60a5fa] border border-[#1e2e4a] text-[9px] font-bold px-2 py-0.5 rounded-sm uppercase tracking-wider">
+                          <span className="bg-[#1a263e] text-[#60a5fa] border border-[#1e2e4a] text-[9px] font-bold px-2 py-0.5 rounded-xl uppercase tracking-wider">
                             {review.tag}
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-zinc-300 leading-relaxed italic font-sans">
+                      <p className="text-xs text-[#a1a1aa] leading-relaxed italic font-sans">
                         "{review.text}"
                       </p>
                     </div>
                     <div className="pt-3 border-t border-[#1e2e4a] flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-sm ${review.avatarBg || 'bg-[#1a263e]'} border border-[#1e2e4a] flex items-center justify-center font-bold text-white text-xs`}>
+                      <div className={`w-8 h-8 rounded-xl ${review.avatarBg || 'bg-[#1a263e]'} border border-[#1e2e4a] flex items-center justify-center font-bold text-[#f1f5f9] text-xs`}>
                         {review.initials}
                       </div>
                       <div>
-                        <h4 className="text-xs font-bold text-white">{review.name}</h4>
-                        <span className="text-[10px] text-zinc-400 block font-sans">{review.association}</span>
+                        <h4 className="text-xs font-bold text-[#f1f5f9]">{review.name}</h4>
+                        <span className="text-[10px] text-[#a1a1aa] block font-sans">{review.association}</span>
                       </div>
                     </div>
                   </div>
@@ -448,17 +447,33 @@ export default function App() {
           
           {/* Brand block */}
           <div className="md:col-span-5 space-y-4">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
               <Logo className="w-8 h-8 shrink-0 text-white" />
               <span className="font-display font-bold text-sm text-white uppercase tracking-wider">
-                EPSA Motor Torijo Bajaj
+                EPSA Motor Bajaj
               </span>
+              <span className="hidden sm:inline-block h-6 w-px bg-[#1e2e4a]" aria-hidden="true" />
+              <img
+                src="/assets/media/images/RE_torito.png"
+                alt="Torito Bajaj"
+                className="h-7 w-auto object-contain opacity-90"
+              />
+              <img
+                src="/assets/media/images/bajaj_favorita.png"
+                alt="Bajaj favorita del Perú"
+                className="h-7 w-auto object-contain opacity-90"
+              />
             </div>
             <p className="text-zinc-400 pr-6 leading-relaxed text-[11px]">
-              Distribuidor oficial autorizado de motocars Torito Bajaj. Nos especializamos en brindar soporte técnico calificado, financiamiento directo flexible y la mejor asesoría comercial en Lima Norte y el Callao.
+              Distribuidor oficial autorizado de motocars Torito Bajaj.{" "}
+              Con <strong className="text-zinc-200 font-medium">{CONTACT.yearsInMarketLabel}</strong>{" "}
+              ofreciendo venta y financiamiento en Lima Norte y el Callao.
             </p>
             <div className="text-[10px] text-zinc-500 space-y-1">
-              <p>© {new Date().getFullYear()} EPSA Motor Torijo Bajaj. Todos los derechos reservados.</p>
+              <p>
+                <span className="text-zinc-400 font-semibold">RUC:</span> {CONTACT.ruc}
+              </p>
+              <p>© {new Date().getFullYear()} EPSA Motor. Todos los derechos reservados.</p>
               <p>Autorizado oficial por Crosland Perú S.A.C.</p>
             </div>
           </div>
@@ -468,13 +483,18 @@ export default function App() {
             <h4 className="text-xs font-bold text-white uppercase tracking-wider">Navegación</h4>
             <ul className="space-y-2 text-[11px]">
               <li>
-                <button onClick={() => scrollToSection("hero-section")} className="hover:text-white cursor-pointer transition-colors text-left">
+                <button onClick={() => scrollToSection("hero-section")} className="hover:text-[#60a5fa] cursor-pointer transition-colors text-left">
                   Inicio
                 </button>
               </li>
               <li>
                 <button onClick={() => scrollToSection("benefits-section")} className="hover:text-[#60a5fa] cursor-pointer transition-colors text-left">
                   Beneficios y Crédito
+                </button>
+              </li>
+              <li>
+                <button onClick={() => scrollToSection("about-section")} className="hover:text-[#60a5fa] cursor-pointer transition-colors text-left">
+                  Quiénes somos
                 </button>
               </li>
               <li>
@@ -494,7 +514,7 @@ export default function App() {
               </li>
               <li>
                 <button onClick={() => scrollToSection("booking-section")} className="hover:text-[#60a5fa] cursor-pointer transition-colors text-left">
-                  Reservas de Taller
+                  Agendar Visita
                 </button>
               </li>
               <li>
@@ -509,14 +529,19 @@ export default function App() {
           <div className="md:col-span-4 space-y-3 text-[11px] leading-relaxed text-zinc-400">
             <h4 className="text-xs font-bold text-white uppercase tracking-wider">Sedes Oficiales</h4>
             <div className="space-y-3">
-              <p>
-                <strong className="text-zinc-200">Puente Piedra:</strong> Av. Puente Piedra 450, Lima.
-              </p>
-              <p>
-                <strong className="text-zinc-200">Comas:</strong> Av. Túpac Amaru 3450, Lima.
-              </p>
-              <p>
-                <strong className="text-zinc-200">Ventanilla:</strong> Av. La Playa Mz. C Lote 15, Callao.
+              {BRANCHES.map((b) => (
+                <p key={b.name}>
+                  <strong className="text-white">{b.name}:</strong> {b.address}
+                </p>
+              ))}
+              <p className="pt-1">
+                <strong className="text-white">Tel / WhatsApp:</strong> {CONTACT.phoneDisplay}
+                <br />
+                <strong className="text-white">Email:</strong> {CONTACT.email}
+                <br />
+                <strong className="text-white">RUC:</strong> {CONTACT.ruc}
+                <br />
+                <strong className="text-white">+20 años</strong> en el mercado
               </p>
             </div>
           </div>
@@ -534,7 +559,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 15, scale: 0.95 }}
               transition={{ type: "spring", stiffness: 260, damping: 20 }}
-              className="bg-[#131c2e] border border-[#1e2e4a] text-zinc-200 px-3.5 py-2 rounded-sm text-[11px] font-bold shadow-lg flex items-center gap-2 uppercase tracking-wider"
+              className="bg-[#131c2e] border border-[#1e2e4a] text-[#e2e8f0] px-3.5 py-2 rounded-xl text-[11px] font-bold shadow-lg flex items-center gap-2 uppercase tracking-wider"
             >
               <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
               ¿Asesoría de Crédito?
@@ -546,7 +571,7 @@ export default function App() {
           {/* Llamada Rápida Direct Call Button with Tooltip */}
           <div className="relative">
             <motion.a
-              href="tel:+51987654321"
+              href={`tel:${CONTACT.phoneTel}`}
               initial={{ opacity: 0, scale: 0, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.15 }}
@@ -559,10 +584,10 @@ export default function App() {
                   timestamp: new Date().toISOString(),
                   channel: "Phone",
                   target: "Sales Hotline",
-                  number: "+51987654321"
+                  number: CONTACT.phoneTel
                 });
               }}
-              className="relative bg-[#0ea5e9] hover:bg-[#0284c7] text-white p-4 rounded-full shadow-lg cursor-pointer flex items-center justify-center transition-all border border-sky-400/30 hover:shadow-[0_0_20px_rgba(14,165,233,0.5)]"
+              className="relative bg-[#3b82f6] hover:bg-[#60a5fa] text-white p-4 rounded-full shadow-lg cursor-pointer flex items-center justify-center transition-all border border-sky-400/30 hover:shadow-[0_0_20px_rgba(59,130,246,0.5)]"
               title="Llamar directamente a ventas"
               id="btn-call-floating"
             >
@@ -570,7 +595,7 @@ export default function App() {
               
               {/* Live Status Indicator */}
               <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0ea5e9] opacity-75"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#3b82f6] opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-[#38bdf8] border-2 border-[#060a13]"></span>
               </span>
             </motion.a>
@@ -583,17 +608,17 @@ export default function App() {
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.96, y: 8 }}
                   transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                  className="absolute bottom-16 right-0 w-64 bg-[#131c2e]/90 backdrop-blur-md border border-[#1e2e4a]/80 p-4 rounded-sm shadow-2xl z-50 pointer-events-none text-left"
+                  className="absolute bottom-16 right-0 w-64 bg-[#131c2e]/90 backdrop-blur-md border border-[#1e2e4a]/80 p-4 rounded-xl shadow-2xl z-50 pointer-events-none text-left"
                 >
                   <div className="relative">
                     <div className="flex items-center gap-1.5 mb-1">
                       <span className="w-1.5 h-1.5 bg-[#38bdf8] rounded-full animate-pulse" />
-                      <span className="font-bold text-[#0ea5e9] text-[10px] uppercase tracking-widest">Llamada Rápida</span>
+                      <span className="font-bold text-[#3b82f6] text-[10px] uppercase tracking-widest">Llamada Rápida</span>
                     </div>
-                    <p className="text-[11px] text-zinc-100 font-bold mb-1">
-                      Central: +51 987 654 321
+                    <p className="text-[11px] text-[#f1f5f9] font-bold mb-1">
+                      Central: {CONTACT.phoneDisplay}
                     </p>
-                    <p className="text-[10px] text-zinc-400 font-sans leading-relaxed">
+                    <p className="text-[10px] text-[#a1a1aa] font-sans leading-relaxed">
                       Llama directo para recibir atención inmediata de un asesor de ventas, resolver tus dudas al instante y programar tu compra.
                     </p>
                     {/* Small speech bubble arrow */}
@@ -639,7 +664,7 @@ export default function App() {
             </div>
 
             <motion.a
-              href="https://wa.me/51987654321?text=Hola%20EPSA%20Motor%2C%20estoy%20interesado%20en%20cotizar%20un%20mototaxi%20Torito%20Bajaj%20y%20conocer%20los%20planes%20de%20cr%C3%A9dito%20directo.%20%C2%BFMe%20podr%C3%ADan%20asesorar%3F"
+              href={CONTACT.whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
               referrerPolicy="no-referrer"
@@ -701,17 +726,17 @@ export default function App() {
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.96, y: 8 }}
                   transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                  className="absolute bottom-16 right-0 w-64 bg-[#131c2e]/90 backdrop-blur-md border border-[#1e2e4a]/80 p-4 rounded-sm shadow-2xl z-50 pointer-events-none text-left"
+                  className="absolute bottom-16 right-0 w-64 bg-[#131c2e]/90 backdrop-blur-md border border-[#1e2e4a]/80 p-4 rounded-xl shadow-2xl z-50 pointer-events-none text-left"
                 >
                   <div className="relative">
                     <div className="flex items-center gap-1.5 mb-1">
                       <span className="w-1.5 h-1.5 bg-[#0df050] rounded-full animate-pulse" />
                       <span className="font-bold text-[#25d366] text-[10px] uppercase tracking-widest">Ventas Online</span>
                     </div>
-                    <p className="text-[11px] text-zinc-100 font-bold mb-1">
+                    <p className="text-[11px] text-[#f1f5f9] font-bold mb-1">
                       Lun a Sáb: 8:00 AM - 6:00 PM
                     </p>
-                    <p className="text-[10px] text-zinc-400 font-sans leading-relaxed">
+                    <p className="text-[10px] text-[#a1a1aa] font-sans leading-relaxed">
                       Escríbenos para cotizar tu mototaxi, consultar planes de financiamiento o programar un test drive.
                     </p>
                     {/* Small speech bubble arrow */}
@@ -730,7 +755,7 @@ export default function App() {
             whileHover={{ scale: 1.08, rotate: 6 }}
             whileTap={{ scale: 0.94 }}
             onClick={() => setIsChatOpen(!isChatOpen)}
-            className="bg-[#2563eb] hover:bg-[#1d4ed8] text-white p-4 rounded-full shadow-lg cursor-pointer flex items-center justify-center transition-all border border-[#60a5fa]/30 hover:shadow-[0_0_20px_rgba(37,99,235,0.5)]"
+            className="bg-[#60a5fa] hover:bg-[#1e3a8a] text-white p-4 rounded-full shadow-lg cursor-pointer flex items-center justify-center transition-all border border-[#60a5fa]/30 hover:shadow-[0_0_20px_rgba(37,99,235,0.5)]"
             title="Abrir chat de asesoría AI"
             id="btn-chat-floating"
           >

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ShieldCheck, MapPin, BadgeDollarSign, Sparkles, Zap, Award, CheckCircle2, Cpu } from "lucide-react";
+import { ShieldCheck, Sparkles, Zap, Award, CheckCircle2, Cpu, Play } from "lucide-react";
+import { MOTOTAXI_MODELS, formatPrice } from "../data";
 
 interface HeroProps {
   onExploreCatalog: () => void;
@@ -9,10 +10,10 @@ interface HeroProps {
 }
 
 export default function Hero({ onExploreCatalog, onBookAppointment, onOpenChat }: HeroProps) {
-  const [activeTab, setActiveTab] = useState<"tech" | "credit">("tech");
+  const [activeTab, setActiveTab] = useState<"video" | "tech" | "credit">("video");
   const [pulseCount, setPulseCount] = useState<number>(0);
+  const featured = MOTOTAXI_MODELS.find((m) => m.destacado) || MOTOTAXI_MODELS[0];
 
-  // Auto-pulse the DTS-i simulator
   useEffect(() => {
     const interval = setInterval(() => {
       setPulseCount((prev) => (prev + 1) % 3);
@@ -21,23 +22,48 @@ export default function Hero({ onExploreCatalog, onBookAppointment, onOpenChat }
   }, []);
 
   return (
-    <div className="relative bg-[#060a13] text-white border-b border-[#1e2e4a] overflow-hidden py-16 md:py-28" id="hero-section">
-      {/* Background Radial Glow */}
+    <div
+      className="relative bg-[#060a13] text-white border-b border-[#1e2e4a] overflow-hidden py-16 md:py-28"
+      id="hero-section"
+    >
+      {/* Video de fondo sutil */}
+      <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+        <video
+          className="absolute inset-0 w-full h-full object-cover opacity-[0.22]"
+          autoPlay
+          loop
+          muted
+          playsInline
+          poster="/assets/media/images/FONDO-TORITO-TITANIO-250-1920X760.jpg"
+        >
+          <source src="/assets/media/video/video-index.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-gradient-to-b from-[#060a13]/75 via-[#060a13]/88 to-[#060a13]" />
+      </div>
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-[#2563eb]/10 rounded-full blur-[130px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          
-          {/* Main Copy */}
           <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
-              className="inline-flex items-center gap-1.5 bg-[#131c2e] border border-[#1e2e4a] text-[#60a5fa] px-3.5 py-1.5 rounded-sm text-[11px] font-bold tracking-wider uppercase shadow-md"
+              className="inline-flex items-center gap-2.5 bg-[#131c2e] border border-[#1e2e4a] text-[#60a5fa] px-3.5 py-2 rounded-sm text-[11px] font-bold tracking-wider uppercase shadow-md"
             >
-              <Sparkles className="w-3.5 h-3.5 text-[#60a5fa] animate-pulse" />
-              Distribuidor Oficial Autorizado Bajaj
+              <img
+                src="/assets/media/images/bajaj_favorita.png"
+                alt=""
+                className="h-5 w-auto object-contain"
+                aria-hidden="true"
+              />
+              <span>Distribuidor Oficial Autorizado Bajaj</span>
+              <img
+                src="/assets/media/images/RE_torito.png"
+                alt=""
+                className="h-5 w-auto object-contain"
+                aria-hidden="true"
+              />
             </motion.div>
 
             <motion.h1
@@ -56,10 +82,12 @@ export default function Hero({ onExploreCatalog, onBookAppointment, onOpenChat }
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-sm text-zinc-400 max-w-2xl mx-auto lg:mx-0 font-sans leading-relaxed"
             >
-              En <strong className="text-white font-medium">EPSA Motor Torijo</strong> acompañamos tu camino hacia el emprendimiento. Ofrecemos el catálogo completo de mototaxis Bajaj original con financiamiento flexible, trámite de placa rápido y servicio de taller certificado en nuestras tiendas de <strong className="text-white font-medium">Puente Piedra, Comas y Ventanilla</strong>.
+              En <strong className="text-white font-medium">EPSA Motor</strong> llevamos{" "}
+              <strong className="text-white font-medium">más de 20 años en el mercado</strong> acompañando tu camino hacia el
+              emprendimiento. Ofrecemos el catálogo completo de mototaxis Bajaj original con financiamiento flexible en
+              nuestras sedes de <strong className="text-white font-medium">Comas, Ventanilla y Puente Piedra</strong>.
             </motion.p>
 
-            {/* Highlights */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -67,16 +95,19 @@ export default function Hero({ onExploreCatalog, onBookAppointment, onOpenChat }
               className="flex gap-6 justify-center lg:justify-start"
             >
               <div className="flex flex-col border-l-2 border-[#2563eb] pl-4 text-left">
-                <span className="text-lg font-bold text-white tracking-tight">BAJAJ TORITO RE</span>
-                <span className="text-[#60a5fa] text-[10px] uppercase font-bold tracking-wider font-mono">El Socio de Oro del Perú</span>
+                <span className="text-lg font-bold text-white tracking-tight">2T UG GSL</span>
+                <span className="text-[#60a5fa] text-[10px] uppercase font-bold tracking-wider font-mono">
+                  Desde S/ 12,199
+                </span>
               </div>
               <div className="flex flex-col border-l-2 border-[#2563eb] pl-4 text-left">
-                <span className="text-lg font-bold text-white tracking-tight">MAXIMA CARGO</span>
-                <span className="text-[#60a5fa] text-[10px] uppercase font-bold tracking-wider font-mono">500 KG de Carga Real</span>
+                <span className="text-lg font-bold text-white tracking-tight">MAXIMA GLP</span>
+                <span className="text-[#60a5fa] text-[10px] uppercase font-bold tracking-wider font-mono">
+                  Hasta 350 kg carga
+                </span>
               </div>
             </motion.div>
 
-            {/* CTA Buttons */}
             <motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
@@ -95,7 +126,7 @@ export default function Hero({ onExploreCatalog, onBookAppointment, onOpenChat }
                 className="btn-secondary px-8 py-3.5 rounded-sm cursor-pointer hover:border-[#2563eb]/50 transition-colors"
                 id="btn-hero-booking"
               >
-                Cita de Mantenimiento
+                Agendar Visita
               </button>
               <button
                 onClick={onOpenChat}
@@ -107,7 +138,6 @@ export default function Hero({ onExploreCatalog, onBookAppointment, onOpenChat }
               </button>
             </motion.div>
 
-            {/* Micro Badges */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -115,21 +145,20 @@ export default function Hero({ onExploreCatalog, onBookAppointment, onOpenChat }
               className="grid grid-cols-3 gap-6 pt-6 border-t border-[#1e2e4a] max-w-md mx-auto lg:mx-0"
             >
               <div className="text-center lg:text-left">
-                <p className="text-xl font-bold text-white font-mono">1 AÑO</p>
-                <p className="text-[10px] text-zinc-400 uppercase tracking-wider font-sans">Garantía de Fábrica</p>
+                <p className="text-xl font-bold text-white font-mono">+20 AÑOS</p>
+                <p className="text-[10px] text-zinc-400 uppercase tracking-wider font-sans">En el mercado</p>
               </div>
               <div className="text-center lg:text-left border-x border-[#1e2e4a]/60 px-4">
-                <p className="text-xl font-bold text-white font-mono">EXPRÉS</p>
-                <p className="text-[10px] text-zinc-400 uppercase tracking-wider font-sans">Aprobación de Crédito</p>
+                <p className="text-xl font-bold text-white font-mono">3 SEDES</p>
+                <p className="text-[10px] text-zinc-400 uppercase tracking-wider font-sans">Lima y Callao</p>
               </div>
               <div className="text-center lg:text-left">
-                <p className="text-xl font-bold text-white font-mono">GRATIS</p>
-                <p className="text-[10px] text-zinc-400 uppercase tracking-wider font-sans">Trámite de Placa</p>
+                <p className="text-xl font-bold text-white font-mono">WHATSAPP</p>
+                <p className="text-[10px] text-zinc-400 uppercase tracking-wider font-sans">+51 907 721 481</p>
               </div>
             </motion.div>
           </div>
 
-          {/* $10,000 Interactive Visual Showcase */}
           <div className="lg:col-span-5 relative">
             <motion.div
               initial={{ opacity: 0, scale: 0.97 }}
@@ -137,11 +166,19 @@ export default function Hero({ onExploreCatalog, onBookAppointment, onOpenChat }
               transition={{ duration: 0.6, delay: 0.2 }}
               className="bg-[#131c2e]/95 backdrop-blur-md border border-[#1e2e4a] rounded-sm p-6 md:p-8 shadow-2xl relative overflow-hidden"
             >
-              {/* Subtle glass reflection effect */}
               <div className="absolute -top-[100px] -right-[100px] w-56 h-56 bg-blue-600/10 rounded-full blur-[80px] pointer-events-none" />
 
-              {/* Toggle Tabs */}
               <div className="flex border-b border-[#1e2e4a] mb-6">
+                <button
+                  onClick={() => setActiveTab("video")}
+                  className={`flex-1 pb-3 text-xs font-bold uppercase tracking-wider border-b-2 cursor-pointer transition-all ${
+                    activeTab === "video"
+                      ? "text-[#60a5fa] border-[#2563eb]"
+                      : "text-zinc-400 border-transparent hover:text-zinc-200"
+                  }`}
+                >
+                  Showroom
+                </button>
                 <button
                   onClick={() => setActiveTab("tech")}
                   className={`flex-1 pb-3 text-xs font-bold uppercase tracking-wider border-b-2 cursor-pointer transition-all ${
@@ -160,12 +197,62 @@ export default function Hero({ onExploreCatalog, onBookAppointment, onOpenChat }
                       : "text-zinc-400 border-transparent hover:text-zinc-200"
                   }`}
                 >
-                  Sola Firma Express
+                  Crédito
                 </button>
               </div>
 
               <AnimatePresence mode="wait">
-                {activeTab === "tech" ? (
+                {activeTab === "video" ? (
+                  <motion.div
+                    key="video-tab"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.3 }}
+                    className="space-y-4"
+                  >
+                    <div className="relative rounded-sm overflow-hidden border border-[#1e2e4a] bg-black aspect-video">
+                      <video
+                        className="w-full h-full object-cover"
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        poster="/assets/media/images/FONDO-TORITO-TITANIO-250-1920X760.jpg"
+                      >
+                        <source src="/assets/media/video/video-index.mp4" type="video/mp4" />
+                      </video>
+                      <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-[#131c2e]/95 border border-[#1e2e4a] px-2.5 py-1 rounded-sm text-[10px] font-bold uppercase tracking-wider text-[#60a5fa]">
+                        <Play className="w-3 h-3" />
+                        EPSA en acción
+                      </div>
+                    </div>
+                    {featured && (
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={featured.imageUrl}
+                          alt={featured.name}
+                          className="w-14 h-14 object-contain bg-[#0a1120] border border-[#1e2e4a] rounded-sm p-1"
+                        />
+                        <div className="text-left min-w-0">
+                          <p className="text-[10px] text-[#60a5fa] font-bold uppercase tracking-wider">
+                            Destacado
+                          </p>
+                          <p className="text-sm font-bold text-white truncate">{featured.name}</p>
+                          <p className="text-xs text-zinc-400">
+                            {formatPrice(featured.basePrice)} · {featured.power}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    <button
+                      onClick={onExploreCatalog}
+                      className="w-full btn-primary py-2.5 text-xs font-bold uppercase tracking-wider rounded-sm cursor-pointer"
+                    >
+                      Ver todos los modelos
+                    </button>
+                  </motion.div>
+                ) : activeTab === "tech" ? (
                   <motion.div
                     key="tech-tab"
                     initial={{ opacity: 0, y: 10 }}
@@ -176,7 +263,9 @@ export default function Hero({ onExploreCatalog, onBookAppointment, onOpenChat }
                   >
                     <div className="flex justify-between items-start">
                       <div>
-                        <span className="text-[#60a5fa] text-[10px] uppercase tracking-wider font-bold">Tecnología Patentada</span>
+                        <span className="text-[#60a5fa] text-[10px] uppercase tracking-wider font-bold">
+                          Tecnología Patentada
+                        </span>
                         <h3 className="text-base font-bold text-white mt-1">Triple Bujía Digital (DTS-i)</h3>
                       </div>
                       <span className="bg-[#1a263e] text-white border border-[#1e2e4a] px-2.5 py-1 rounded-sm text-[10px] font-mono font-bold uppercase tracking-wider">
@@ -184,89 +273,41 @@ export default function Hero({ onExploreCatalog, onBookAppointment, onOpenChat }
                       </span>
                     </div>
 
-                    {/* Animated Engine Spark Simulation */}
                     <div className="h-44 bg-[#0a1120] rounded-sm relative overflow-hidden border border-[#1e2e4a] flex flex-col items-center justify-center p-4">
-                      {/* Grid Pattern Background */}
                       <div className="absolute inset-0 bg-[radial-gradient(#1e2e4a_1px,transparent_1px)] [background-size:16px_16px] opacity-40" />
 
                       <div className="relative z-10 flex items-center justify-around w-full max-w-sm mt-2">
-                        {/* Spark Plug 1 */}
-                        <div className="flex flex-col items-center space-y-2">
-                          <motion.div
-                            animate={{
-                              scale: pulseCount === 0 ? [1, 1.15, 1] : 1,
-                              borderColor: pulseCount === 0 ? "#60a5fa" : "#1e2e4a",
-                              backgroundColor: pulseCount === 0 ? "rgba(37, 99, 235, 0.2)" : "#131c2e",
-                            }}
-                            transition={{ duration: 0.4 }}
-                            className="w-11 h-11 rounded-full border flex items-center justify-center text-zinc-400"
-                          >
-                            <Zap className={`w-5 h-5 ${pulseCount === 0 ? "text-[#60a5fa] animate-bounce" : "text-zinc-500"}`} />
-                          </motion.div>
-                          <span className={`text-[9px] font-mono font-bold tracking-wider ${pulseCount === 0 ? "text-white" : "text-zinc-500"}`}>
-                            BUJÍA 1
-                          </span>
-                        </div>
-
-                        {/* Connection Line */}
-                        <div className="h-[1px] flex-grow bg-gradient-to-r from-blue-500/20 to-blue-500/20 relative">
-                          {pulseCount === 1 && (
+                        {[0, 1, 2].map((i) => (
+                          <div key={i} className="flex flex-col items-center space-y-2">
                             <motion.div
-                              layoutId="active-spark-line"
-                              className="absolute top-0 bottom-0 left-0 right-0 bg-[#60a5fa] shadow-[0_0_8px_#3b82f6]"
-                            />
-                          )}
-                        </div>
-
-                        {/* Spark Plug 2 */}
-                        <div className="flex flex-col items-center space-y-2">
-                          <motion.div
-                            animate={{
-                              scale: pulseCount === 1 ? [1, 1.15, 1] : 1,
-                              borderColor: pulseCount === 1 ? "#60a5fa" : "#1e2e4a",
-                              backgroundColor: pulseCount === 1 ? "rgba(37, 99, 235, 0.2)" : "#131c2e",
-                            }}
-                            transition={{ duration: 0.4 }}
-                            className="w-11 h-11 rounded-full border flex items-center justify-center text-zinc-400"
-                          >
-                            <Zap className={`w-5 h-5 ${pulseCount === 1 ? "text-[#60a5fa] animate-bounce" : "text-zinc-500"}`} />
-                          </motion.div>
-                          <span className={`text-[9px] font-mono font-bold tracking-wider ${pulseCount === 1 ? "text-white" : "text-zinc-500"}`}>
-                            BUJÍA 2
-                          </span>
-                        </div>
-
-                        {/* Connection Line */}
-                        <div className="h-[1px] flex-grow bg-gradient-to-r from-blue-500/20 to-blue-500/20 relative">
-                          {pulseCount === 2 && (
-                            <motion.div
-                              layoutId="active-spark-line"
-                              className="absolute top-0 bottom-0 left-0 right-0 bg-[#60a5fa] shadow-[0_0_8px_#3b82f6]"
-                            />
-                          )}
-                        </div>
-
-                        {/* Spark Plug 3 */}
-                        <div className="flex flex-col items-center space-y-2">
-                          <motion.div
-                            animate={{
-                              scale: pulseCount === 2 ? [1, 1.15, 1] : 1,
-                              borderColor: pulseCount === 2 ? "#60a5fa" : "#1e2e4a",
-                              backgroundColor: pulseCount === 2 ? "rgba(37, 99, 235, 0.2)" : "#131c2e",
-                            }}
-                            transition={{ duration: 0.4 }}
-                            className="w-11 h-11 rounded-full border flex items-center justify-center text-zinc-400"
-                          >
-                            <Zap className={`w-5 h-5 ${pulseCount === 2 ? "text-[#60a5fa] animate-bounce" : "text-zinc-500"}`} />
-                          </motion.div>
-                          <span className={`text-[9px] font-mono font-bold tracking-wider ${pulseCount === 2 ? "text-white" : "text-zinc-500"}`}>
-                            BUJÍA 3
-                          </span>
-                        </div>
+                              animate={{
+                                scale: pulseCount === i ? [1, 1.15, 1] : 1,
+                                borderColor: pulseCount === i ? "#60a5fa" : "#1e2e4a",
+                                backgroundColor:
+                                  pulseCount === i ? "rgba(37, 99, 235, 0.2)" : "#131c2e",
+                              }}
+                              transition={{ duration: 0.4 }}
+                              className="w-11 h-11 rounded-full border flex items-center justify-center text-zinc-400"
+                            >
+                              <Zap
+                                className={`w-5 h-5 ${
+                                  pulseCount === i ? "text-[#60a5fa] animate-bounce" : "text-zinc-500"
+                                }`}
+                              />
+                            </motion.div>
+                            <span
+                              className={`text-[9px] font-mono font-bold tracking-wider ${
+                                pulseCount === i ? "text-white" : "text-zinc-500"
+                              }`}
+                            >
+                              BUJÍA {i + 1}
+                            </span>
+                          </div>
+                        ))}
                       </div>
 
                       <p className="text-[10px] text-[#60a5fa] font-mono font-bold mt-4 tracking-wider uppercase flex items-center gap-1">
-                        <Cpu className="w-3.5 h-3.5 animate-spin" style={{ animationDuration: '4s' }} />
+                        <Cpu className="w-3.5 h-3.5 animate-spin" style={{ animationDuration: "4s" }} />
                         Encendido Digital Secuencial Multi-Punto
                       </p>
                     </div>
@@ -274,11 +315,17 @@ export default function Hero({ onExploreCatalog, onBookAppointment, onOpenChat }
                     <div className="space-y-3 text-xs">
                       <div className="flex items-start gap-2 text-zinc-300">
                         <CheckCircle2 className="w-4 h-4 text-[#60a5fa] shrink-0 mt-0.5" />
-                        <span><strong className="text-white font-medium">Combustión Óptima</strong>: 27% más ahorro de combustible que un motor convencional de 2 bujías.</span>
+                        <span>
+                          <strong className="text-white font-medium">Combustión Óptima</strong>: 27% más ahorro de
+                          combustible que un motor convencional de 2 bujías.
+                        </span>
                       </div>
                       <div className="flex items-start gap-2 text-zinc-300">
                         <CheckCircle2 className="w-4 h-4 text-[#60a5fa] shrink-0 mt-0.5" />
-                        <span><strong className="text-white font-medium">Menor Emisión</strong>: Diseñado para cumplir con rigurosas normas ecológicas con GNV original.</span>
+                        <span>
+                          <strong className="text-white font-medium">Menor Emisión</strong>: Diseñado para cumplir con
+                          rigurosas normas ecológicas con GNV original.
+                        </span>
                       </div>
                     </div>
                   </motion.div>
@@ -293,7 +340,9 @@ export default function Hero({ onExploreCatalog, onBookAppointment, onOpenChat }
                   >
                     <div className="flex justify-between items-start">
                       <div>
-                        <span className="text-[#60a5fa] text-[10px] uppercase tracking-wider font-bold">Evaluación Inmediata</span>
+                        <span className="text-[#60a5fa] text-[10px] uppercase tracking-wider font-bold">
+                          Evaluación Inmediata
+                        </span>
                         <h3 className="text-base font-bold text-white mt-1">Línea de Crédito Directo</h3>
                       </div>
                       <span className="bg-[#1a263e] text-[#60a5fa] border border-[#1e2e4a] px-2.5 py-1 rounded-sm text-[10px] font-bold uppercase tracking-wider animate-pulse">
@@ -301,52 +350,44 @@ export default function Hero({ onExploreCatalog, onBookAppointment, onOpenChat }
                       </span>
                     </div>
 
-                    {/* Credit Roadmap */}
                     <div className="space-y-4">
-                      <motion.div
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.1 }}
-                        className="bg-[#0a1120] border border-[#1e2e4a] p-3 rounded-sm flex items-center gap-4"
-                      >
-                        <span className="w-7 h-7 rounded-full bg-[#2563eb]/20 border border-[#2563eb] flex items-center justify-center font-bold text-xs text-[#60a5fa]">
-                          1
-                        </span>
-                        <div className="text-xs">
-                          <p className="font-bold text-white">Presenta tu DNI</p>
-                          <p className="text-[11px] text-zinc-400 mt-0.5">Vigente y con dirección local en Lima o Callao.</p>
+                      {[
+                        {
+                          n: "1",
+                          t: "Presenta tu DNI",
+                          d: "Vigente y con dirección local en Lima o Callao.",
+                        },
+                        {
+                          n: "2",
+                          t: "Recibo de Servicios",
+                          d: "Luz o Agua que certifique tu residencia familiar.",
+                        },
+                        {
+                          n: "✓",
+                          t: "¡Aprobado al Instante!",
+                          d: "Evaluamos tu historial comercial y fijamos la inicial.",
+                          ok: true,
+                        },
+                      ].map((step) => (
+                        <div
+                          key={step.n}
+                          className="bg-[#0a1120] border border-[#1e2e4a] p-3 rounded-sm flex items-center gap-4"
+                        >
+                          <span
+                            className={`w-7 h-7 rounded-full border flex items-center justify-center font-bold text-xs ${
+                              step.ok
+                                ? "bg-emerald-500/10 border-emerald-500/40 text-emerald-400"
+                                : "bg-[#2563eb]/20 border-[#2563eb] text-[#60a5fa]"
+                            }`}
+                          >
+                            {step.n}
+                          </span>
+                          <div className="text-xs">
+                            <p className="font-bold text-white">{step.t}</p>
+                            <p className="text-[11px] text-zinc-400 mt-0.5">{step.d}</p>
+                          </div>
                         </div>
-                      </motion.div>
-
-                      <motion.div
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.2 }}
-                        className="bg-[#0a1120] border border-[#1e2e4a] p-3 rounded-sm flex items-center gap-4"
-                      >
-                        <span className="w-7 h-7 rounded-full bg-[#2563eb]/20 border border-[#2563eb] flex items-center justify-center font-bold text-xs text-[#60a5fa]">
-                          2
-                        </span>
-                        <div className="text-xs">
-                          <p className="font-bold text-white">Recibo de Servicios</p>
-                          <p className="text-[11px] text-zinc-400 mt-0.5">Luz o Agua que certifique tu residencia familiar.</p>
-                        </div>
-                      </motion.div>
-
-                      <motion.div
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.3 }}
-                        className="bg-[#0a1120] border border-[#1e2e4a] p-3 rounded-sm flex items-center gap-4"
-                      >
-                        <span className="w-7 h-7 rounded-full bg-emerald-500/10 border border-emerald-500/40 flex items-center justify-center font-bold text-xs text-emerald-400">
-                          ✓
-                        </span>
-                        <div className="text-xs">
-                          <p className="font-bold text-white">¡Aprobado al Instante!</p>
-                          <p className="text-[11px] text-zinc-400 mt-0.5">Evaluamos tu historial comercial y fijamos la inicial.</p>
-                        </div>
-                      </motion.div>
+                      ))}
                     </div>
 
                     <button
@@ -359,20 +400,26 @@ export default function Hero({ onExploreCatalog, onBookAppointment, onOpenChat }
                 )}
               </AnimatePresence>
 
-              {/* Bottom Quick Specs Footer */}
-              <div className="mt-6 pt-4 border-t border-[#1e2e4a] flex items-center justify-between text-[11px] text-zinc-400">
+              <div className="mt-6 pt-4 border-t border-[#1e2e4a] flex items-center justify-between gap-3 text-[11px] text-zinc-400">
                 <span className="flex items-center gap-1.5">
                   <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                  Soporte Oficial S.A.
+                  Venta Oficial
                 </span>
-                <span className="flex items-center gap-1.5">
-                  <Award className="w-4 h-4 text-[#60a5fa]" />
-                  Crosland Líder Perú
+                <span className="flex items-center gap-2">
+                  <img
+                    src="/assets/media/images/RE_torito.png"
+                    alt="Torito"
+                    className="h-5 w-auto object-contain"
+                  />
+                  <img
+                    src="/assets/media/images/bajaj_favorita.png"
+                    alt="Bajaj"
+                    className="h-5 w-auto object-contain"
+                  />
                 </span>
               </div>
             </motion.div>
           </div>
-
         </div>
       </div>
     </div>

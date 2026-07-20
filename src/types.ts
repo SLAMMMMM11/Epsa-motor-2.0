@@ -2,9 +2,10 @@ export interface MototaxiModel {
   id: string;
   name: string;
   tagline: string;
-  basePrice: number; // in Peruvian Soles (S/.)
+  basePrice: number; // Soles (S/)
   engine: string;
   power: string;
+  torque?: string;
   fuelTypes: string[];
   capacity: string;
   payload?: string;
@@ -15,6 +16,10 @@ export interface MototaxiModel {
     value: string;
   }[];
   imageUrl: string;
+  destacado?: boolean;
+  colors?: string[];
+  /** pasajeros | carga | trabajo — para filtros del catálogo */
+  category?: "pasajeros" | "carga" | "trabajo";
 }
 
 export interface Booking {
@@ -25,7 +30,11 @@ export interface Booking {
   date: string;
   time: string;
   branch: "Puente Piedra" | "Comas" | "Ventanilla";
-  serviceType: "Prueba de Manejo" | "Mantenimiento Preventivo" | "Reparación General" | "Consulta Financiera" | "Personalización / Tuning";
+  serviceType:
+    | "Prueba de Manejo"
+    | "Consulta de Compra"
+    | "Consulta Financiera"
+    | "Cotización en Sede";
   modelInterest?: string;
   notes?: string;
   status?: string;
@@ -60,4 +69,3 @@ export interface Testimonial {
   avatarBg?: string;
   tag?: string;
 }
-

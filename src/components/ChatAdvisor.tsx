@@ -14,7 +14,7 @@ export default function ChatAdvisor({ isOpen, onClose }: ChatAdvisorProps) {
     {
       id: "welcome",
       role: "assistant",
-      content: "¡Hola! Bienvenido al canal de atención digital de **EPSA Motor Torijo Bajaj**. Estamos a tu disposición para ayudarte a conseguir tu mototaxi Bajaj original con financiamiento a tu medida, brindarte información técnica, o agendar una cita de servicio técnico en Puente Piedra, Comas o Ventanilla. ¿En qué te podemos ayudar hoy?",
+      content: "¡Hola! Bienvenido al canal de atención de **EPSA Motor**. Te ayudamos a cotizar mototaxis Torito Bajaj del catálogo oficial (**2T UG**, **CROM PLUS**, **Torito 250**, **MAXIMA GLP**), financiamiento y visitas en **Comas, Ventanilla o Puente Piedra**. WhatsApp: **+51 907 721 481**. ¿En qué te ayudamos hoy?",
       timestamp: new Date(),
     }
   ]);
@@ -23,10 +23,10 @@ export default function ChatAdvisor({ isOpen, onClose }: ChatAdvisorProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const suggestions = [
-    "Requisitos para Crédito",
-    "Precio de Torito RE GNV",
-    "Tuning y Carpas",
-    "Sede Puente Piedra"
+    "Requisitos para crédito",
+    "Precio CROM PLUS GSL",
+    "Mejor moto para carga",
+    "Sede Comas",
   ];
 
   // Auto-scroll to bottom of chat
@@ -51,11 +51,14 @@ export default function ChatAdvisor({ isOpen, onClose }: ChatAdvisorProps) {
     setLoading(true);
 
     try {
-      // Map previous message history to payload structure
-      const historyPayload = messages.slice(-8).map((m) => ({
-        role: m.role,
-        content: m.content,
-      }));
+      // Server expects { messages: [{ role, content }, ...] } including the new user message
+      const messagesPayload = [
+        ...messages.slice(-8).map((m) => ({
+          role: m.role,
+          content: m.content,
+        })),
+        { role: "user" as const, content: textToSend },
+      ];
 
       const response = await fetch("/api/chat", {
         method: "POST",
@@ -63,8 +66,7 @@ export default function ChatAdvisor({ isOpen, onClose }: ChatAdvisorProps) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          message: textToSend,
-          history: historyPayload,
+          messages: messagesPayload,
         }),
       });
 
@@ -124,14 +126,14 @@ export default function ChatAdvisor({ isOpen, onClose }: ChatAdvisorProps) {
         >
       
       {/* Chat Header */}
-      <div className="bg-[#0a1120] text-white p-4 flex justify-between items-center border-b border-[#1e2e4a]">
+      <div className="bg-[#60a5fa] text-white p-4 flex justify-between items-center border-b border-[#060a13]">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-sm bg-[#131c2e] border border-[#1e2e4a] flex items-center justify-center text-[#60a5fa] shadow-xs shrink-0">
+          <div className="w-9 h-9 rounded-xl bg-[#060a13]/15 border border-[#1e2e4a]/25 flex items-center justify-center text-white shadow-xs shrink-0">
             <span className="font-display font-bold text-xs">EPSA</span>
           </div>
           <div>
             <h4 className="font-display font-bold text-xs uppercase tracking-wider text-white">Asesoría de Ventas</h4>
-            <p className="text-[9px] text-[#60a5fa] uppercase tracking-widest font-bold font-mono">EPSA Motor Torijo — Concesionario</p>
+            <p className="text-[9px] text-[#60a5fa] uppercase tracking-widest font-bold font-mono">EPSA Motor — Concesionario</p>
           </div>
         </div>
 
@@ -139,14 +141,14 @@ export default function ChatAdvisor({ isOpen, onClose }: ChatAdvisorProps) {
           <button
             onClick={handleResetChat}
             title="Reiniciar conversación"
-            className="text-zinc-400 hover:text-white p-1.5 rounded-sm hover:bg-[#1a263e] transition-all cursor-pointer"
+            className="text-white/80 hover:text-white p-1.5 rounded-xl hover:bg-[#1e3a8a]/10 transition-all cursor-pointer"
           >
             <RotateCcw className="w-4 h-4" />
           </button>
           <button
             onClick={onClose}
             title="Cerrar ventana"
-            className="text-zinc-400 hover:text-white p-1.5 rounded-sm hover:bg-[#1a263e] transition-all cursor-pointer"
+            className="text-white/80 hover:text-white p-1.5 rounded-xl hover:bg-[#1e3a8a]/10 transition-all cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -164,8 +166,8 @@ export default function ChatAdvisor({ isOpen, onClose }: ChatAdvisorProps) {
             >
               {/* Avatar */}
               <div
-                className={`w-7 h-7 rounded-sm flex items-center justify-center shrink-0 text-[9px] font-bold ${
-                  isAssistant ? "bg-[#131c2e] border border-[#1e2e4a] text-[#60a5fa]" : "bg-[#0a1120] border border-[#1e2e4a] text-[#60a5fa]"
+                className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-[9px] font-bold ${
+                  isAssistant ? "bg-[#131c2e] border border-[#1e2e4a] text-[#60a5fa]" : "bg-[#060a13] border border-[#1e2e4a] text-[#60a5fa]"
                 }`}
               >
                 {isAssistant ? "EPSA" : <User className="w-3.5 h-3.5" />}
@@ -174,10 +176,10 @@ export default function ChatAdvisor({ isOpen, onClose }: ChatAdvisorProps) {
               {/* Message Bubble */}
               <div className="space-y-1">
                 <div
-                  className={`p-3 rounded-sm text-xs leading-relaxed shadow-xs border ${
+                  className={`p-3 rounded-xl text-xs leading-relaxed shadow-xs border ${
                     isAssistant
-                      ? "bg-[#131c2e] border-[#1e2e4a] text-zinc-200 rounded-tl-none"
-                      : "bg-[#2563eb] border-[#2563eb] text-white rounded-tr-none"
+                      ? "bg-[#131c2e] border-[#1e2e4a] text-[#e2e8f0] rounded-tl-none"
+                      : "bg-[#60a5fa] border-[#60a5fa] text-white rounded-tr-none"
                   }`}
                 >
                   {/* Markdown-like simple bold rendering */}
@@ -192,7 +194,7 @@ export default function ChatAdvisor({ isOpen, onClose }: ChatAdvisorProps) {
                     </p>
                   ))}
                 </div>
-                <span className={`text-[9px] text-zinc-500 block px-1 ${!isAssistant ? "text-right" : ""}`}>
+                <span className={`text-[9px] text-[#71717a] block px-1 ${!isAssistant ? "text-right" : ""}`}>
                   {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>
@@ -203,10 +205,10 @@ export default function ChatAdvisor({ isOpen, onClose }: ChatAdvisorProps) {
         {/* Loading Bubble */}
         {loading && (
           <div className="flex gap-2.5 mr-auto max-w-[80%]">
-            <div className="w-7 h-7 rounded-sm bg-[#131c2e] border border-[#1e2e4a] text-[#60a5fa] flex items-center justify-center text-[9px] font-bold">
+            <div className="w-7 h-7 rounded-xl bg-[#131c2e] border border-[#1e2e4a] text-[#60a5fa] flex items-center justify-center text-[9px] font-bold">
               EPSA
             </div>
-            <div className="bg-[#131c2e] border border-[#1e2e4a] p-3.5 rounded-sm rounded-tl-none shadow-xs flex items-center gap-1.5">
+            <div className="bg-[#131c2e] border border-[#1e2e4a] p-3.5 rounded-xl rounded-tl-none shadow-xs flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 bg-[#60a5fa] rounded-full animate-bounce" />
               <span className="w-1.5 h-1.5 bg-[#60a5fa] rounded-full animate-bounce [animation-delay:0.2s]" />
               <span className="w-1.5 h-1.5 bg-[#60a5fa] rounded-full animate-bounce [animation-delay:0.4s]" />
@@ -219,14 +221,14 @@ export default function ChatAdvisor({ isOpen, onClose }: ChatAdvisorProps) {
 
       {/* Suggestions Slider */}
       {messages.length === 1 && !loading && (
-        <div className="bg-[#0a1120] border-t border-[#1e2e4a] p-3 overflow-x-auto">
-          <p className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider mb-2 px-1">Preguntas Frecuentes:</p>
+        <div className="bg-[#060a13] border-t border-[#1e2e4a] p-3 overflow-x-auto">
+          <p className="text-[9px] text-[#a1a1aa] font-bold uppercase tracking-wider mb-2 px-1">Preguntas Frecuentes:</p>
           <div className="flex gap-2 whitespace-nowrap pb-1">
             {suggestions.map((sug, i) => (
               <button
                 key={i}
                 onClick={() => handleSend(sug)}
-                className="bg-[#131c2e] hover:bg-[#1a263e] border border-[#1e2e4a] text-[#60a5fa] hover:text-white text-[11px] px-3.5 py-2 rounded-sm cursor-pointer transition-all shrink-0 shadow-xs font-bold"
+                className="bg-[#131c2e] hover:bg-[#1a263e] border border-[#1e2e4a] text-[#60a5fa] hover:text-[#f1f5f9] text-[11px] px-3.5 py-2 rounded-xl cursor-pointer transition-all shrink-0 shadow-xs font-bold"
               >
                 {sug}
               </button>
@@ -236,19 +238,19 @@ export default function ChatAdvisor({ isOpen, onClose }: ChatAdvisorProps) {
       )}
 
       {/* Chat Footer Input */}
-      <form onSubmit={handleFormSubmit} className="bg-[#0a1120] border-t border-[#1e2e4a] p-3 flex gap-2">
+      <form onSubmit={handleFormSubmit} className="bg-[#060a13] border-t border-[#1e2e4a] p-3 flex gap-2">
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Escribe tu consulta aquí..."
-          className="flex-1 border border-[#1e2e4a] focus:border-[#3b82f6] focus:outline-none rounded-sm px-3 text-xs text-white bg-[#131c2e] placeholder-zinc-500"
+          className="flex-1 border border-[#1e2e4a] focus:border-[#3b82f6] focus:outline-none rounded-xl px-3 text-xs text-[#f1f5f9] bg-[#131c2e] placeholder-zinc-500"
           disabled={loading}
         />
         <button
           type="submit"
           disabled={!input.trim() || loading}
-          className="bg-[#2563eb] hover:bg-[#1d4ed8] disabled:bg-[#131c2e] text-white disabled:text-zinc-600 p-2.5 rounded-sm cursor-pointer transition-all shrink-0 border border-[#2563eb] disabled:border-[#1e2e4a]"
+          className="bg-[#60a5fa] hover:bg-[#1e3a8a] disabled:bg-[#1a263e] text-white disabled:text-zinc-500 p-2.5 rounded-xl cursor-pointer transition-all shrink-0 border border-[#60a5fa] disabled:border-[#1e2e4a]"
         >
           <Send className="w-4 h-4" />
         </button>

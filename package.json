@@ -4,15 +4,21 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "tsx server.ts",
-    "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
+    "dev": "netlify dev",
+    "dev:express": "tsx server.ts",
+    "build": "vite build",
+    "build:express": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
     "start": "node dist/server.cjs",
+    "deploy": "npm run build && netlify deploy --prod",
+    "deploy:preview": "npm run build && netlify deploy",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js bookings.json",
     "lint": "tsc --noEmit"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
+    "@netlify/blobs": "^10.7.10",
+    "@netlify/functions": "^5.3.0",
     "@tailwindcss/vite": "^4.1.14",
     "@vitejs/plugin-react": "^5.0.4",
     "animejs": "^4.5.0",

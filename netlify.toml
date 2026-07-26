@@ -1,0 +1,38 @@
+# Configuración de Netlify — EPSA Motor
+#
+# El despliegue es por CLI (`npm run deploy`), que sube dist/ ya compilado
+# y NO consume minutos de build. El bloque [build] queda documentado por si
+# algún día conectas el repositorio, pero mientras no lo conectes no se
+# ejecuta nada en los servidores de Netlify.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[functions]
+  node_bundler = "esbuild"
+
+# `netlify dev` levanta Vite por detrás y sirve las funciones en /api/*,
+# en el mismo puerto 3001 que ya usabas con Express.
+[dev]
+  command = "vite"
+  targetPort = 5173
+  port = 3001
+  framework = "#custom"
+  autoLaunch = false
+
+# Fallback SPA. Las funciones declaran su ruta con `export const config`
+# y se resuelven antes que los redirects, así que /api/* no cae aquí.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

@@ -2,8 +2,9 @@
 from pathlib import Path
 from PIL import Image
 
-SRC = Path(r"C:\Users\harol\Documents\Proyectos Web\Epsa-motor-2.0\public\assets\media\images\bajaj_logo.png")
-DL = Path(r"C:\Users\harol\Downloads\bajaj_logo.png")
+# Relativa al propio script: sobrevive a que se renombre o mueva el proyecto.
+SRC = Path(__file__).resolve().parent.parent / "public" / "assets" / "media" / "images" / "bajaj_logo.png"
+DL = Path.home() / "Downloads" / "bajaj_logo.png"
 p = SRC if SRC.exists() else DL
 
 im = Image.open(p).convert("RGBA")

@@ -50,6 +50,8 @@ export interface ChatMessage {
 
 export interface Branch {
   name: string;
+  imageUrl: string;
+  imageAlt: string;
   address: string;
   reference: string;
   phone: string;
@@ -63,9 +65,9 @@ export interface Branch {
 export interface Testimonial {
   name: string;
   association: string;
-  initials: string;
+  modelName: string;
+  avatarImage: string;
   rating: number;
   text: string;
-  avatarBg?: string;
   tag?: string;
 }

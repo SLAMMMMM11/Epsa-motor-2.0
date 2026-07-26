@@ -28,7 +28,7 @@ export default function Branches() {
   };
 
   return (
-    <section className="py-20 bg-[#060a13] text-[#f1f5f9] relative overflow-hidden" id="branches-section">
+    <section className="epsa-tool-section branches-section py-20 bg-[#060a13] text-[#f1f5f9] relative overflow-hidden" id="branches-section">
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         
         {/* Title Block */}
@@ -73,67 +73,77 @@ export default function Branches() {
             <motion.div
               key={branch.name}
               variants={cardVariants}
-              className="bg-[#131c2e] border border-[#1e2e4a] rounded-xl p-6 md:p-8 space-y-6 flex flex-col justify-between hover:border-[#3b82f6] hover:shadow-[0_0_20px_rgba(59,130,246,0.12)] transition-all duration-300 group relative overflow-hidden"
+              className="branch-card bg-[#131c2e] border border-[#1e2e4a] rounded-xl flex flex-col transition-all duration-300 group relative overflow-hidden"
             >
-              <div className="space-y-4">
-                {/* Branch Header */}
-                <div className="flex justify-between items-start">
-                  <div>
-                    <span className="text-[#60a5fa] text-[9px] uppercase font-bold tracking-widest">Sede Oficial</span>
-                    <h3 className="text-lg font-bold text-[#f1f5f9] mt-0.5">
-                      {branch.name}
-                    </h3>
-                  </div>
-                  <span className="bg-[#1a263e] text-[#60a5fa] border border-[#1e2e4a] px-2.5 py-1 rounded-xl text-[10px] font-bold uppercase tracking-wider">
-                    Abierto
-                  </span>
-                </div>
-
-                {/* Information blocks */}
-                <div className="space-y-3.5 pt-2 text-xs text-[#a1a1aa]">
-                  {/* Address */}
-                  <div className="flex gap-3">
-                    <MapPin className="w-4 h-4 text-[#60a5fa] shrink-0 mt-0.5" />
-                    <div>
-                      <p className="font-semibold text-[#f1f5f9]">{branch.address}</p>
-                      <p className="text-[#a1a1aa] text-[11px] mt-0.5">{branch.reference}</p>
-                    </div>
-                  </div>
-
-                  {/* Phone */}
-                  <div className="flex gap-3 items-center">
-                    <Phone className="w-4 h-4 text-[#60a5fa] shrink-0" />
-                    <span className="font-medium text-[#f1f5f9]">{branch.phone}</span>
-                  </div>
-
-                  {/* Email */}
-                  <div className="flex gap-3 items-center">
-                    <Mail className="w-4 h-4 text-[#60a5fa] shrink-0" />
-                    <span className="text-[#a1a1aa]">{branch.email}</span>
-                  </div>
-
-                  {/* Schedules */}
-                  <div className="flex gap-3 border-t border-[#1e2e4a]/60 pt-3.5">
-                    <Clock className="w-4 h-4 text-[#60a5fa] shrink-0 mt-0.5" />
-                    <div className="space-y-1">
-                      <p className="font-medium text-[#f1f5f9]">{branch.scheduleWeek}</p>
-                      <p className="text-[#a1a1aa] text-[11px]">{branch.scheduleSunday}</p>
-                    </div>
-                  </div>
-                </div>
+              <div className="branch-card-media">
+                <img
+                  src={branch.imageUrl}
+                  alt={`Fachada referencial de la sede EPSA Motor ${branch.name}`}
+                  loading="lazy"
+                />
               </div>
 
-              {/* Action buttons */}
-              <div className="pt-4 z-10">
-                <a
-                  href={branch.mapsUrl}
-                  target="_blank"
-                  referrerPolicy="no-referrer"
-                  className="btn-secondary w-full py-2.5 px-4 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm group-hover:border-[#60a5fa]/40 group-hover:bg-[#1a263e] transition-colors"
-                >
-                  Ver en Google Maps
-                  <ExternalLink className="w-3.5 h-3.5 text-[#60a5fa] group-hover:translate-x-0.5 transition-transform" />
-                </a>
+              <div className="branch-card-body">
+                <div className="space-y-4">
+                  {/* Branch Header */}
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <span className="text-[#60a5fa] text-[9px] uppercase font-bold tracking-widest">Sede Oficial</span>
+                      <h3 className="text-lg font-bold text-[#f1f5f9] mt-0.5">
+                        {branch.name}
+                      </h3>
+                    </div>
+                    <span className="branch-status px-2.5 py-1 rounded-xl text-[10px] font-bold uppercase tracking-wider">
+                      Atención en sede
+                    </span>
+                  </div>
+
+                  {/* Information blocks */}
+                  <div className="space-y-3.5 pt-2 text-xs text-[#a1a1aa]">
+                    {/* Address */}
+                    <div className="flex gap-3">
+                      <MapPin className="w-4 h-4 text-[#60a5fa] shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-semibold text-[#f1f5f9]">{branch.address}</p>
+                        <p className="text-[#a1a1aa] text-[11px] mt-0.5">{branch.reference}</p>
+                      </div>
+                    </div>
+
+                    {/* Phone */}
+                    <div className="flex gap-3 items-center">
+                      <Phone className="w-4 h-4 text-[#60a5fa] shrink-0" />
+                      <span className="font-medium text-[#f1f5f9]">{branch.phone}</span>
+                    </div>
+
+                    {/* Email */}
+                    <div className="flex gap-3 items-center">
+                      <Mail className="w-4 h-4 text-[#60a5fa] shrink-0" />
+                      <span className="text-[#a1a1aa] break-all">{branch.email}</span>
+                    </div>
+
+                    {/* Schedules */}
+                    <div className="flex gap-3 border-t border-[#1e2e4a]/60 pt-3.5">
+                      <Clock className="w-4 h-4 text-[#60a5fa] shrink-0 mt-0.5" />
+                      <div className="space-y-1">
+                        <p className="font-medium text-[#f1f5f9]">{branch.scheduleWeek}</p>
+                        <p className="text-[#a1a1aa] text-[11px]">{branch.scheduleSunday}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action buttons */}
+                <div className="pt-4 z-10">
+                  <a
+                    href={branch.mapsUrl}
+                    target="_blank"
+                    referrerPolicy="no-referrer"
+                    className="branch-map-link w-full py-2.5 px-4 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-colors"
+                  >
+                    Cómo llegar
+                    <ExternalLink className="w-3.5 h-3.5 transition-transform" />
+                  </a>
+                </div>
               </div>
             </motion.div>
           ))}
@@ -145,7 +155,7 @@ export default function Branches() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="mt-16 bg-[#131c2e] border border-[#1e2e4a] p-6 md:p-8 rounded-xl flex flex-col md:flex-row items-center justify-between gap-6 max-w-4xl mx-auto shadow-md"
+          className="branch-trust-card mt-16 bg-[#131c2e] border border-[#1e2e4a] p-6 md:p-8 rounded-xl flex flex-col md:flex-row items-center justify-between gap-6 max-w-4xl mx-auto shadow-md"
         >
           <div className="flex gap-4 items-center">
             <div className="w-12 h-12 rounded-full bg-[#1a263e] border border-[#1e2e4a] flex items-center justify-center text-[#60a5fa] shrink-0">

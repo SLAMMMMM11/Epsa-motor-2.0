@@ -9,7 +9,8 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const app = express();
-const PORT = 3000;
+const PORT = Number(process.env.PORT ?? 3000);
+const HOST = process.env.HOST ?? "0.0.0.0";
 
 app.use(express.json());
 
@@ -203,7 +204,7 @@ async function initializeServer() {
     console.log("Serving production static files from dist.");
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
+  app.listen(PORT, HOST, () => {
     console.log(`EPSA Motor server running on http://localhost:${PORT}`);
   });
 }

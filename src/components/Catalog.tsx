@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { MototaxiModel } from "../types";
 import { MOTOTAXI_MODELS, formatPrice } from "../data";
-import { Check, Info, Calculator, Sparkles, X } from "lucide-react";
+import { ArrowRight, Check, Info, Calculator, Sparkles, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 const containerVariants = {
@@ -30,9 +30,10 @@ const cardVariants = {
 
 interface CatalogProps {
   onSelectModelForBooking: (modelName: string) => void;
+  onViewProduct: (modelId: string) => void;
 }
 
-export default function Catalog({ onSelectModelForBooking }: CatalogProps) {
+export default function Catalog({ onSelectModelForBooking, onViewProduct }: CatalogProps) {
   const [selectedFuel, setSelectedFuel] = useState<string>("Todos");
   const [activeModel, setActiveModel] = useState<MototaxiModel | null>(null);
   const [downPayment, setDownPayment] = useState<number>(3000);
@@ -68,8 +69,18 @@ export default function Catalog({ onSelectModelForBooking }: CatalogProps) {
     return Math.round(rawPayment);
   };
 
+  const calculateStartingInstallment = (basePrice: number) => {
+    const principal = basePrice * 0.75;
+    const monthlyRate = 0.24 / 12;
+    const months = 24;
+    return Math.round(
+      (principal * monthlyRate * Math.pow(1 + monthlyRate, months)) /
+        (Math.pow(1 + monthlyRate, months) - 1)
+    );
+  };
+
   return (
-    <section className="py-20 bg-[#060a13]/80 border-b border-[#1e2e4a] relative" id="catalog-section">
+    <section className="epsa-tool-section epsa-catalog-section py-20 bg-[#060a13]/80 border-b border-[#1e2e4a] relative" id="catalog-section">
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
           <motion.div
@@ -85,10 +96,16 @@ export default function Catalog({ onSelectModelForBooking }: CatalogProps) {
               Modelos Torito Bajaj
             </h2>
             <p className="text-[#a1a1aa] mt-2 text-xs md:text-sm max-w-xl font-sans">
-              Elige la motorización y combustible que mejor se adapte a tu ruta. Los precios mostrados son
-              referenciales para la versión con lona y pueden variar según zona, stock o accesorios adicionales.
-              Confirma la cotización final en sede EPSA o por WhatsApp.
+              Elige la motorización y el combustible que mejor se adapten a tu ruta y forma de trabajo.
             </p>
+            <div className="catalog-pricing-notice">
+              <Info aria-hidden="true" />
+              <p>
+                <strong>Información de precios:</strong> los montos publicados son referenciales para la versión
+                con techo de lona. Pueden variar según sede, zona, disponibilidad y accesorios. Confirma el precio
+                final con EPSA Motor.
+              </p>
+            </div>
           </motion.div>
 
           <motion.div
@@ -119,7 +136,7 @@ export default function Catalog({ onSelectModelForBooking }: CatalogProps) {
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          className="catalog-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
         >
           <AnimatePresence mode="popLayout">
             {filteredModels.map((model) => (
@@ -129,7 +146,7 @@ export default function Catalog({ onSelectModelForBooking }: CatalogProps) {
                 key={model.id}
                 className="catalog-card bg-[#131c2e]/90 backdrop-blur-xs border border-[#1e2e4a] rounded-xl overflow-hidden transition-all duration-500 flex flex-col group h-full relative hover:border-[#3b82f6] hover:shadow-[0_0_25px_rgba(59,130,246,0.12)]"
               >
-                <div className="h-52 bg-[#060a13] relative flex items-center justify-center overflow-hidden border-b border-[#1e2e4a]">
+                <div className="catalog-card-media h-52 bg-[#060a13] relative flex items-center justify-center overflow-hidden border-b border-[#1e2e4a]">
                   <div className="absolute top-3 left-3 bg-[#131c2e] border border-[#1e2e4a] text-[10px] text-[#60a5fa] px-2.5 py-1 rounded-xl font-bold uppercase tracking-wider z-20 shadow-sm">
                     {model.engine}
                   </div>
@@ -201,15 +218,29 @@ export default function Catalog({ onSelectModelForBooking }: CatalogProps) {
                     )}
                   </div>
 
-                  <div className="pt-2">
+                  <div className="catalog-price-block pt-2">
                     <div className="flex justify-between items-baseline mb-3">
                       <span className="text-[10px] text-[#a1a1aa] uppercase tracking-widest font-bold">
-                        Precio ref. (con lona)
+                        Desde
                       </span>
                       <span className="text-lg font-bold text-[#60a5fa]">
                         {formatPrice(model.basePrice)}
                       </span>
                     </div>
+
+                    <div className="catalog-installment mb-3">
+                      <span>Cuota referencial desde</span>
+                      <strong>{formatPrice(calculateStartingInstallment(model.basePrice))} / mes</strong>
+                      <small>Con 25% de inicial · 24 meses</small>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => onViewProduct(model.id)}
+                      className="catalog-detail-link"
+                    >
+                      Ver ficha completa <ArrowRight aria-hidden="true" />
+                    </button>
 
                     <div className="grid grid-cols-2 gap-2">
                       <button
@@ -217,13 +248,13 @@ export default function Catalog({ onSelectModelForBooking }: CatalogProps) {
                         className="btn-secondary py-2 px-3 rounded-xl text-[10px] uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer hover:border-[#60a5fa]/50 transition-colors duration-300"
                       >
                         <Calculator className="w-3.5 h-3.5 text-[#60a5fa]" />
-                        Simular
+                        Simular cuota
                       </button>
                       <button
                         onClick={() => onSelectModelForBooking(model.name)}
                         className="btn-primary text-white font-bold py-2 px-3 rounded-xl text-[10px] uppercase tracking-wider text-center cursor-pointer hover:scale-102 transition-transform duration-300"
                       >
-                        Reservar Cita
+                        Cotizar
                       </button>
                     </div>
                   </div>

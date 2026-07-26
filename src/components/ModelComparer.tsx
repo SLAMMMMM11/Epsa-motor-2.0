@@ -1,328 +1,221 @@
+import { ArrowRight, Coins, Fuel, Gauge, Scale, Settings2, Users } from "lucide-react";
 import { useState } from "react";
 import { MOTOTAXI_MODELS } from "../data";
-import { motion, AnimatePresence } from "motion/react";
-import { Scale, Check, ChevronDown, Award, Zap, Fuel, Sparkles, TrendingUp } from "lucide-react";
 
 interface ModelComparerProps {
   onSelectModel: (modelName: string) => void;
 }
 
+type ComparisonKey = "price" | "engine" | "power" | "torque" | "capacity" | "fuel";
+
+const COMPARISON_ROWS: Array<{
+  key: ComparisonKey;
+  label: string;
+  icon: typeof Coins;
+  preference?: "lower" | "higher";
+}> = [
+  { key: "price", label: "Precio referencial", icon: Coins, preference: "lower" },
+  { key: "engine", label: "Motor", icon: Settings2 },
+  { key: "power", label: "Potencia", icon: Gauge, preference: "higher" },
+  { key: "torque", label: "Torque", icon: Scale, preference: "higher" },
+  { key: "capacity", label: "Uso", icon: Users },
+  { key: "fuel", label: "Combustible", icon: Fuel },
+];
+
+const getNumericValue = (value: string | number | undefined) => {
+  if (typeof value === "number") return value;
+  return Number.parseFloat(value || "0") || 0;
+};
+
 export default function ModelComparer({ onSelectModel }: ModelComparerProps) {
-  const [modelAId, setModelAId] = useState<string>("crom-plus-gsl");
-  const [modelBId, setModelBId] = useState<string>("2t-ug-gsl");
+  const [modelAId, setModelAId] = useState("crom-plus-gsl");
+  const [modelBId, setModelBId] = useState("2t-ug-gsl");
+  const modelA = MOTOTAXI_MODELS.find((model) => model.id === modelAId) || MOTOTAXI_MODELS[0];
+  const modelB = MOTOTAXI_MODELS.find((model) => model.id === modelBId) || MOTOTAXI_MODELS[1];
 
-  const modelA = MOTOTAXI_MODELS.find((m) => m.id === modelAId) || MOTOTAXI_MODELS[0];
-  const modelB = MOTOTAXI_MODELS.find((m) => m.id === modelBId) || MOTOTAXI_MODELS[1];
-
-  // Helper to extract spec value safely
-  const getSpecValue = (model: typeof modelA, label: string): string => {
-    const spec = model.specs.find((s) => s.label.toLowerCase().includes(label.toLowerCase()));
-    if (spec) return spec.value;
-
-    if (label === "Motor") return model.engine;
-    if (label === "Potencia") return model.power;
-    if (label === "Torque") return model.torque || "-";
-    if (label === "Carga") return model.payload || "-";
-    if (label === "Capacidad") return model.capacity;
-    if (label === "Combustible" || label === "Combustibles") {
-      return model.fuelTypes.join(" / ");
-    }
-    if (label === "Precio") {
-      return `S/ ${model.basePrice.toLocaleString("es-PE")}`;
-    }
-    return "-";
+  const getComparisonValue = (key: ComparisonKey, model: typeof modelA) => {
+    if (key === "price") return `S/ ${model.basePrice.toLocaleString("es-PE")}`;
+    if (key === "engine") return model.engine;
+    if (key === "power") return model.power;
+    if (key === "torque") return model.torque || "No especificado";
+    if (key === "capacity") return model.capacity;
+    return model.fuelTypes.join(" / ");
   };
 
-  const comparisonSpecs = [
-    { label: "Motor", icon: <Zap className="w-4 h-4 text-amber-400" /> },
-    { label: "Potencia", icon: <Zap className="w-4 h-4 text-orange-400" /> },
-    { label: "Torque", icon: <TrendingUp className="w-4 h-4 text-blue-400" /> },
-    { label: "Carga", icon: <Award className="w-4 h-4 text-purple-400" /> },
-    { label: "Combustible", icon: <Fuel className="w-4 h-4 text-[#60a5fa]" /> },
-    { label: "Precio", icon: <Sparkles className="w-4 h-4 text-emerald-400" /> },
-  ];
+  const getWinner = (key: ComparisonKey, preference?: "lower" | "higher") => {
+    if (!preference) return null;
+
+    const valueA =
+      key === "price"
+        ? modelA.basePrice
+        : getNumericValue(key === "power" ? modelA.power : modelA.torque);
+    const valueB =
+      key === "price"
+        ? modelB.basePrice
+        : getNumericValue(key === "power" ? modelB.power : modelB.torque);
+
+    if (valueA === valueB) return "tie";
+    if (preference === "lower") return valueA < valueB ? "a" : "b";
+    return valueA > valueB ? "a" : "b";
+  };
+
+  const budgetModel = modelA.basePrice <= modelB.basePrice ? modelA : modelB;
+  const performanceModel =
+    getNumericValue(modelA.power) >= getNumericValue(modelB.power) ? modelA : modelB;
 
   return (
-    <section className="py-20 bg-[#060a13] text-[#f1f5f9] relative overflow-hidden" id="comparer-section">
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
-        
-        {/* Title Block */}
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <motion.span
-            initial={{ opacity: 0, y: -10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-[#60a5fa] text-xs font-bold uppercase tracking-widest block mb-2"
-          >
-            Análisis Comparativo
-          </motion.span>
-          <h2 className="text-3xl sm:text-4xl font-display font-bold text-[#f1f5f9] tracking-tight leading-tight">
-            Compara Nuestras Unidades
-          </h2>
-          <p className="text-[#a1a1aa] mt-4 text-xs md:text-sm leading-relaxed font-sans">
-            ¿Dudas sobre cuál se adapta mejor a tu ruta diaria? Elige dos vehículos para realizar una comparación técnica exhaustiva cara a cara.
-          </p>
-        </div>
+    <section className="epsa-tool-section model-comparison-section" id="comparer-section">
+      <div className="model-comparison-shell">
+        <header className="model-comparison-heading">
+          <div>
+            <span>Decide con claridad</span>
+            <h2>Compara nuestras unidades</h2>
+          </div>
+          <p>Elige dos Toritos y revisa solo las diferencias que importan.</p>
+        </header>
 
-        {/* Comparison Dashboard Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-          
-          {/* Column A - Selector and Card */}
-          <div className="lg:col-span-5 bg-[#131c2e] border border-[#1e2e4a] rounded-xl p-6 md:p-8 flex flex-col justify-between space-y-6">
-            <div className="space-y-4">
-              <label className="text-[#a1a1aa] text-xs font-bold uppercase tracking-wider block">
-                Selecciona Modelo A
-              </label>
-              <div className="relative">
+        <div className="model-comparison-board">
+          <div className="model-comparison-stage">
+            <article className="model-choice-card">
+              <label htmlFor="comparison-model-a">Primera unidad</label>
+              <div className="model-choice-select">
                 <select
+                  id="comparison-model-a"
                   value={modelAId}
-                  onChange={(e) => setModelAId(e.target.value)}
-                  className="w-full bg-[#1a263e] border border-[#1e2e4a] text-[#f1f5f9] text-xs font-bold uppercase tracking-wider py-3.5 px-4 rounded-xl appearance-none focus:border-[#3b82f6] outline-none cursor-pointer"
+                  onChange={(event) => setModelAId(event.target.value)}
                 >
                   {MOTOTAXI_MODELS.map((model) => (
-                    <option key={model.id} value={model.id}>
+                    <option key={model.id} value={model.id} disabled={model.id === modelBId}>
                       {model.name}
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="w-4 h-4 text-[#a1a1aa] absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
 
-              {/* Dynamic Image & General Info */}
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={modelAId}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.25 }}
-                  className="pt-4 space-y-4"
-                >
-                  <div className="aspect-video w-full rounded-xl overflow-hidden bg-[#060a13] border border-[#1e2e4a]/60 relative group">
-                    <img
-                      src={modelA.imageUrl}
-                      alt={modelA.name}
-                      referrerPolicy="no-referrer"
-                      className="w-full h-full object-contain p-2 bg-[#1a263e] group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#060a13] via-transparent to-transparent opacity-80" />
-                    <div className="absolute bottom-3 left-3">
-                      <span className="text-[#60a5fa] text-[9px] uppercase font-bold tracking-widest block">Potencia de Trabajo</span>
-                      <span className="text-xs font-bold text-[#f1f5f9] font-mono">{modelA.power}</span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg font-bold text-[#f1f5f9]">{modelA.name}</h3>
-                    <p className="text-[#60a5fa] text-xs font-medium mt-0.5">{modelA.tagline}</p>
-                    <p className="text-[#a1a1aa] text-xs mt-3 leading-relaxed font-sans">{modelA.description}</p>
-                  </div>
-
-                  {/* Highlights Bullet List */}
-                  <div className="pt-2 space-y-2">
-                    <span className="text-[#71717a] text-[10px] uppercase font-bold tracking-wider block">Ventajas Clave:</span>
-                    {modelA.highlights.slice(0, 2).map((highlight, index) => (
-                      <div key={index} className="flex gap-2 items-start text-xs text-[#a1a1aa] font-sans">
-                        <Check className="w-3.5 h-3.5 text-[#60a5fa] shrink-0 mt-0.5" />
-                        <span>{highlight}</span>
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
-              </AnimatePresence>
-            </div>
-
-            <button
-              onClick={() => onSelectModel(modelA.name)}
-              className="btn-secondary w-full py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wider text-center"
-            >
-              Cotizar {modelA.name}
-            </button>
-          </div>
-
-          {/* Central Comparison Grid Specs list - MIDDLE */}
-          <div className="lg:col-span-2 flex flex-col justify-center items-center py-6 bg-[#060a13]/40 border border-[#1e2e4a] rounded-xl p-4 text-center relative">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-5">
-              <Scale className="w-48 h-48 text-[#60a5fa]" />
-            </div>
-
-            <div className="space-y-8 w-full z-10">
-              <div className="w-10 h-10 rounded-full bg-[#1a263e] border border-[#1e2e4a] flex items-center justify-center text-[#60a5fa] mx-auto shadow-sm">
-                <Scale className="w-5 h-5" />
-              </div>
-              
-              <div className="space-y-6">
-                {comparisonSpecs.map((spec) => (
-                  <div key={spec.label} className="space-y-1">
-                    <div className="flex items-center justify-center gap-1.5 mx-auto">
-                      {spec.icon}
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-[#60a5fa]">
-                        {spec.label}
-                      </span>
-                    </div>
-                    {/* Display side-by-side values concisely for mobile view inside list */}
-                    <div className="flex lg:hidden justify-between text-[11px] font-sans px-4 text-[#a1a1aa] font-medium">
-                      <span className="truncate max-w-[45%] text-left">{getSpecValue(modelA, spec.label)}</span>
-                      <span className="text-[#71717a]">vs</span>
-                      <span className="truncate max-w-[45%] text-right">{getSpecValue(modelB, spec.label)}</span>
-                    </div>
-                  </div>
-                ))}
-
-                {/* Price block */}
-                <div className="space-y-1 pt-4 border-t border-[#1e2e4a]">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#71717a]">Inversión Estimada</span>
-                  <div className="flex lg:hidden justify-between font-mono font-bold text-xs px-4">
-                    <span className="text-[#f1f5f9]">S/. {modelA.basePrice.toLocaleString("es-PE")}</span>
-                    <span className="text-[#71717a]">vs</span>
-                    <span className="text-[#f1f5f9]">S/. {modelB.basePrice.toLocaleString("es-PE")}</span>
-                  </div>
+              <div className="model-choice-visual">
+                <span className="model-choice-visual__letter">A</span>
+                <img key={modelA.id} src={modelA.imageUrl} alt={modelA.name} />
+                <div className="model-choice-visual__meta">
+                  <span>{modelA.category === "carga" ? "Carga y pasajeros" : "Pasajeros"}</span>
+                  <strong>{modelA.name}</strong>
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Column B - Selector and Card */}
-          <div className="lg:col-span-5 bg-[#131c2e] border border-[#1e2e4a] rounded-xl p-6 md:p-8 flex flex-col justify-between space-y-6">
-            <div className="space-y-4">
-              <label className="text-[#a1a1aa] text-xs font-bold uppercase tracking-wider block">
-                Selecciona Modelo B
-              </label>
-              <div className="relative">
+              <div className="model-choice-summary">
+                <strong>S/ {modelA.basePrice.toLocaleString("es-PE")}</strong>
+                <div>
+                  {modelA.fuelTypes.map((fuel) => (
+                    <span key={fuel}>{fuel}</span>
+                  ))}
+                </div>
+              </div>
+            </article>
+
+            <span className="model-comparison-versus" aria-hidden="true">
+              VS
+            </span>
+
+            <article className="model-choice-card">
+              <label htmlFor="comparison-model-b">Segunda unidad</label>
+              <div className="model-choice-select">
                 <select
+                  id="comparison-model-b"
                   value={modelBId}
-                  onChange={(e) => setModelBId(e.target.value)}
-                  className="w-full bg-[#1a263e] border border-[#1e2e4a] text-[#f1f5f9] text-xs font-bold uppercase tracking-wider py-3.5 px-4 rounded-xl appearance-none focus:border-[#3b82f6] outline-none cursor-pointer"
+                  onChange={(event) => setModelBId(event.target.value)}
                 >
                   {MOTOTAXI_MODELS.map((model) => (
-                    <option key={model.id} value={model.id}>
+                    <option key={model.id} value={model.id} disabled={model.id === modelAId}>
                       {model.name}
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="w-4 h-4 text-[#a1a1aa] absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
 
-              {/* Dynamic Image & General Info */}
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={modelBId}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.25 }}
-                  className="pt-4 space-y-4"
-                >
-                  <div className="aspect-video w-full rounded-xl overflow-hidden bg-[#060a13] border border-[#1e2e4a]/60 relative group">
-                    <img
-                      src={modelB.imageUrl}
-                      alt={modelB.name}
-                      referrerPolicy="no-referrer"
-                      className="w-full h-full object-contain p-2 bg-[#1a263e] group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#060a13] via-transparent to-transparent opacity-80" />
-                    <div className="absolute bottom-3 left-3">
-                      <span className="text-[#60a5fa] text-[9px] uppercase font-bold tracking-widest block">Potencia de Trabajo</span>
-                      <span className="text-xs font-bold text-[#f1f5f9] font-mono">{modelB.power}</span>
-                    </div>
-                  </div>
+              <div className="model-choice-visual">
+                <span className="model-choice-visual__letter">B</span>
+                <img key={modelB.id} src={modelB.imageUrl} alt={modelB.name} />
+                <div className="model-choice-visual__meta">
+                  <span>{modelB.category === "carga" ? "Carga y pasajeros" : "Pasajeros"}</span>
+                  <strong>{modelB.name}</strong>
+                </div>
+              </div>
 
-                  <div>
-                    <h3 className="text-lg font-bold text-[#f1f5f9]">{modelB.name}</h3>
-                    <p className="text-[#60a5fa] text-xs font-medium mt-0.5">{modelB.tagline}</p>
-                    <p className="text-[#a1a1aa] text-xs mt-3 leading-relaxed font-sans">{modelB.description}</p>
-                  </div>
-
-                  {/* Highlights Bullet List */}
-                  <div className="pt-2 space-y-2">
-                    <span className="text-[#71717a] text-[10px] uppercase font-bold tracking-wider block">Ventajas Clave:</span>
-                    {modelB.highlights.slice(0, 2).map((highlight, index) => (
-                      <div key={index} className="flex gap-2 items-start text-xs text-[#a1a1aa] font-sans">
-                        <Check className="w-3.5 h-3.5 text-[#60a5fa] shrink-0 mt-0.5" />
-                        <span>{highlight}</span>
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
-              </AnimatePresence>
-            </div>
-
-            <button
-              onClick={() => onSelectModel(modelB.name)}
-              className="btn-primary w-full py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wider text-center"
-            >
-              Cotizar {modelB.name}
-            </button>
+              <div className="model-choice-summary">
+                <strong>S/ {modelB.basePrice.toLocaleString("es-PE")}</strong>
+                <div>
+                  {modelB.fuelTypes.map((fuel) => (
+                    <span key={fuel}>{fuel}</span>
+                  ))}
+                </div>
+              </div>
+            </article>
           </div>
 
+          <div className="model-comparison-specs">
+            <div className="model-comparison-specs__head">
+              <span>Lo que cambia</span>
+              <strong>{modelA.name}</strong>
+              <strong>{modelB.name}</strong>
+            </div>
+
+            {COMPARISON_ROWS.map((row) => {
+              const Icon = row.icon;
+              const winner = getWinner(row.key, row.preference);
+              return (
+                <div className="model-comparison-row" key={row.key}>
+                  <span className="model-comparison-row__label">
+                    <Icon aria-hidden="true" />
+                    {row.label}
+                  </span>
+                  <span
+                    className={
+                      winner === "a" || winner === "tie"
+                        ? "model-comparison-row__value is-best"
+                        : "model-comparison-row__value"
+                    }
+                  >
+                    {getComparisonValue(row.key, modelA)}
+                    {winner === "a" && <small>Ventaja</small>}
+                  </span>
+                  <span
+                    className={
+                      winner === "b" || winner === "tie"
+                        ? "model-comparison-row__value is-best"
+                        : "model-comparison-row__value"
+                    }
+                  >
+                    {getComparisonValue(row.key, modelB)}
+                    {winner === "b" && <small>Ventaja</small>}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="model-comparison-decision">
+            <div className="model-comparison-insights">
+              <article>
+                <span>Menor inversión</span>
+                <strong>{budgetModel.name}</strong>
+              </article>
+              <article>
+                <span>Mayor potencia</span>
+                <strong>{performanceModel.name}</strong>
+              </article>
+            </div>
+
+            <div className="model-comparison-actions">
+              <button type="button" onClick={() => onSelectModel(modelA.name)}>
+                Cotizar {modelA.name}
+                <ArrowRight aria-hidden="true" />
+              </button>
+              <button type="button" onClick={() => onSelectModel(modelB.name)}>
+                Cotizar {modelB.name}
+                <ArrowRight aria-hidden="true" />
+              </button>
+            </div>
+          </div>
         </div>
-
-        {/* Desktop Side-by-Side Spec Table */}
-        <div className="hidden lg:block mt-8 bg-[#131c2e] border border-[#1e2e4a] rounded-xl overflow-hidden">
-          <table className="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr className="bg-[#060a13] border-b border-[#1e2e4a]">
-                <th className="py-4 px-6 text-[#a1a1aa] font-bold uppercase tracking-wider w-1/4">Característica</th>
-                <th className="py-4 px-6 text-[#f1f5f9] font-bold uppercase tracking-wider w-3/8 border-r border-[#1e2e4a]/60">
-                  {modelA.name}
-                </th>
-                <th className="py-4 px-6 text-[#f1f5f9] font-bold uppercase tracking-wider w-3/8">
-                  {modelB.name}
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#1e2e4a]/40 text-[#a1a1aa]">
-              
-              {comparisonSpecs.map((spec) => (
-                <tr key={spec.label} className="hover:bg-[#1a263e]/20 transition-colors">
-                  <td className="py-4 px-6 font-semibold text-[#f1f5f9]">{spec.label}</td>
-                  <td className="py-4 px-6 border-r border-[#1e2e4a]/60 font-sans leading-normal">
-                    {getSpecValue(modelA, spec.label)}
-                  </td>
-                  <td className="py-4 px-6 font-sans leading-normal">
-                    {getSpecValue(modelB, spec.label)}
-                  </td>
-                </tr>
-              ))}
-
-              {/* Special Payload and FuelTypes row */}
-              <tr className="hover:bg-[#1a263e]/20 transition-colors">
-                <td className="py-4 px-6 font-semibold text-[#f1f5f9]">Combustibles de Fábrica</td>
-                <td className="py-4 px-6 border-r border-[#1e2e4a]/60">
-                  <div className="flex gap-1.5 flex-wrap">
-                    {modelA.fuelTypes.map((t) => (
-                      <span key={t} className="bg-[#1a263e] border border-[#1e2e4a] text-[10px] font-bold px-2 py-0.5 text-[#a1a1aa] rounded-xl uppercase">
-                        {t}
-                      </span>
-                    ))}
-                  </div>
-                </td>
-                <td className="py-4 px-6">
-                  <div className="flex gap-1.5 flex-wrap">
-                    {modelB.fuelTypes.map((t) => (
-                      <span key={t} className="bg-[#1a263e] border border-[#1e2e4a] text-[10px] font-bold px-2 py-0.5 text-[#a1a1aa] rounded-xl uppercase">
-                        {t}
-                      </span>
-                    ))}
-                  </div>
-                </td>
-              </tr>
-
-              {/* Price row */}
-              <tr className="bg-[#060a13]/30 font-bold">
-                <td className="py-5 px-6 text-[#60a5fa]">Precio Base Estimado</td>
-                <td className="py-5 px-6 border-r border-[#1e2e4a]/60 font-mono text-[#f1f5f9] text-sm">
-                  S/. {modelA.basePrice.toLocaleString("es-PE")} PEN
-                </td>
-                <td className="py-5 px-6 font-mono text-[#f1f5f9] text-sm">
-                  S/. {modelB.basePrice.toLocaleString("es-PE")} PEN
-                </td>
-              </tr>
-
-            </tbody>
-          </table>
-        </div>
-
       </div>
     </section>
   );

@@ -1,35 +1,53 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState, type SyntheticEvent } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ShieldCheck, Sparkles, Zap, Award, CheckCircle2, Cpu, Play } from "lucide-react";
+import { Award, ShieldCheck, Zap, Play } from "lucide-react";
 import { MOTOTAXI_MODELS, formatPrice } from "../data";
 
 interface HeroProps {
   onExploreCatalog: () => void;
-  onBookAppointment: () => void;
   onOpenChat: () => void;
 }
 
-export default function Hero({ onExploreCatalog, onBookAppointment, onOpenChat }: HeroProps) {
-  const [activeTab, setActiveTab] = useState<"video" | "tech" | "credit">("video");
-  const [pulseCount, setPulseCount] = useState<number>(0);
+type HeroTab = "video" | "tech" | "credit";
+
+const HERO_TABS: HeroTab[] = ["video", "tech", "credit"];
+const HERO_TAB_ROTATION_MS = 9000;
+
+const syncVideoWithCarousel = (event: SyntheticEvent<HTMLVideoElement>) => {
+  const video = event.currentTarget;
+  const targetDurationInSeconds = HERO_TAB_ROTATION_MS / 1000;
+
+  if (!Number.isFinite(video.duration) || video.duration <= 0) return;
+
+  const synchronizedPlaybackRate = video.duration / targetDurationInSeconds;
+  video.defaultPlaybackRate = synchronizedPlaybackRate;
+  video.playbackRate = synchronizedPlaybackRate;
+};
+
+export default function Hero({ onExploreCatalog, onOpenChat }: HeroProps) {
+  const [activeTab, setActiveTab] = useState<HeroTab>("video");
   const featured = MOTOTAXI_MODELS.find((m) => m.destacado) || MOTOTAXI_MODELS[0];
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setPulseCount((prev) => (prev + 1) % 3);
-    }, 1200);
-    return () => clearInterval(interval);
-  }, []);
+    const rotationTimer = window.setTimeout(() => {
+      setActiveTab((currentTab) => {
+        const currentIndex = HERO_TABS.indexOf(currentTab);
+        return HERO_TABS[(currentIndex + 1) % HERO_TABS.length];
+      });
+    }, HERO_TAB_ROTATION_MS);
+
+    return () => window.clearTimeout(rotationTimer);
+  }, [activeTab]);
 
   return (
     <div
-      className="relative bg-[#060a13] text-white border-b border-[#1e2e4a] overflow-hidden py-16 md:py-28"
+      className="hero-home-section relative bg-[#071e3d] text-white border-b border-[#21466f] overflow-hidden py-14 md:py-24"
       id="hero-section"
     >
       {/* Video de fondo sutil */}
       <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
         <video
-          className="absolute inset-0 w-full h-full object-cover opacity-[0.22]"
+          className="hero-background-video absolute inset-0 h-full w-full object-cover object-center opacity-[0.52]"
           autoPlay
           loop
           muted
@@ -38,42 +56,62 @@ export default function Hero({ onExploreCatalog, onBookAppointment, onOpenChat }
         >
           <source src="/assets/media/video/video-index.mp4" type="video/mp4" />
         </video>
-        <div className="absolute inset-0 bg-gradient-to-b from-[#060a13]/75 via-[#060a13]/88 to-[#060a13]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#071e3d]/34 via-[#071e3d]/48 to-[#071e3d]/74" />
       </div>
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-[#2563eb]/10 rounded-full blur-[130px] pointer-events-none" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-[#ed111d]/8 rounded-full blur-[130px] pointer-events-none" />
+      <div className="absolute -right-24 top-0 h-full w-36 rotate-[12deg] bg-[#ed111d] opacity-90 pointer-events-none" aria-hidden="true" />
 
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-              className="inline-flex items-center gap-2.5 bg-[#131c2e] border border-[#1e2e4a] text-[#60a5fa] px-3.5 py-2 rounded-sm text-[11px] font-bold tracking-wider uppercase shadow-md"
-            >
-              <img
-                src="/assets/media/images/bajaj_favorita.png"
-                alt=""
-                className="h-5 w-auto object-contain"
-                aria-hidden="true"
-              />
-              <span>Distribuidor Oficial Autorizado Bajaj</span>
-              <img
-                src="/assets/media/images/RE_torito.png"
-                alt=""
-                className="h-5 w-auto object-contain"
-                aria-hidden="true"
-              />
-            </motion.div>
+            <div className="hero-credential-row">
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className="hero-authorized-badge"
+              >
+                <img
+                  src="/assets/media/images/bajaj_favorita.png"
+                  alt=""
+                  className="h-5 w-auto object-contain"
+                  aria-hidden="true"
+                />
+                <span>Distribuidor Oficial Autorizado Bajaj</span>
+                <img
+                  src="/assets/media/images/RE_torito.png"
+                  alt=""
+                  className="h-5 w-auto object-contain"
+                  aria-hidden="true"
+                />
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, rotate: -6, scale: 0.9 }}
+                animate={{ opacity: 1, rotate: -2, scale: 1 }}
+                transition={{ duration: 0.45, delay: 0.12 }}
+                className="hero-anniversary-badge"
+                aria-label="Más de 20 años de experiencia"
+              >
+                <span className="hero-anniversary-badge__seal">
+                  <Award aria-hidden="true" />
+                  <strong>20</strong>
+                </span>
+                <span className="hero-anniversary-badge__copy">
+                  <strong>Años</strong>
+                  <small>de trayectoria</small>
+                </span>
+              </motion.div>
+            </div>
 
             <motion.h1
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="text-4xl sm:text-6xl lg:text-7xl font-display font-bold leading-none tracking-tight mb-4 text-white"
+              className="text-5xl sm:text-6xl lg:text-7xl font-display font-bold leading-[0.92] tracking-tight mb-4 text-white"
             >
-              Movilidad Urbana <br />
-              <span className="text-[#60a5fa] font-serif italic">y Progreso Local</span>
+              Potencia con respaldo. <br />
+              <span className="text-[#ed111d]">Mueve tu camino.</span>
             </motion.h1>
 
             <motion.p
@@ -82,10 +120,9 @@ export default function Hero({ onExploreCatalog, onBookAppointment, onOpenChat }
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-sm text-zinc-400 max-w-2xl mx-auto lg:mx-0 font-sans leading-relaxed"
             >
-              En <strong className="text-white font-medium">EPSA Motor</strong> llevamos{" "}
-              <strong className="text-white font-medium">más de 20 años en el mercado</strong> acompañando tu camino hacia el
-              emprendimiento. Ofrecemos el catálogo completo de mototaxis Bajaj original con financiamiento flexible en
-              nuestras sedes de <strong className="text-white font-medium">Comas, Ventanilla y Puente Piedra</strong>.
+              Encuentra el Torito Bajaj que hará avanzar tu negocio. En <strong className="text-white font-medium">EPSA Motor</strong>{" "}
+              combinamos <strong className="text-white font-medium">más de 20 años de experiencia</strong>, financiamiento flexible
+              y atención cercana en Comas, Ventanilla y Puente Piedra.
             </motion.p>
 
             <motion.div
@@ -94,15 +131,15 @@ export default function Hero({ onExploreCatalog, onBookAppointment, onOpenChat }
               transition={{ duration: 0.6, delay: 0.3 }}
               className="flex gap-6 justify-center lg:justify-start"
             >
-              <div className="flex flex-col border-l-2 border-[#2563eb] pl-4 text-left">
+              <div className="flex flex-col border-l-2 border-[#ed111d] pl-4 text-left">
                 <span className="text-lg font-bold text-white tracking-tight">2T UG GSL</span>
-                <span className="text-[#60a5fa] text-[10px] uppercase font-bold tracking-wider font-mono">
+                <span className="text-white/70 text-[10px] uppercase font-bold tracking-wider font-mono">
                   Desde S/ 12,199
                 </span>
               </div>
-              <div className="flex flex-col border-l-2 border-[#2563eb] pl-4 text-left">
+              <div className="flex flex-col border-l-2 border-[#ed111d] pl-4 text-left">
                 <span className="text-lg font-bold text-white tracking-tight">MAXIMA GLP</span>
-                <span className="text-[#60a5fa] text-[10px] uppercase font-bold tracking-wider font-mono">
+                <span className="text-white/70 text-[10px] uppercase font-bold tracking-wider font-mono">
                   Hasta 350 kg carga
                 </span>
               </div>
@@ -122,19 +159,12 @@ export default function Hero({ onExploreCatalog, onBookAppointment, onOpenChat }
                 Explorar Modelos
               </button>
               <button
-                onClick={onBookAppointment}
-                className="btn-secondary px-8 py-3.5 rounded-sm cursor-pointer hover:border-[#2563eb]/50 transition-colors"
-                id="btn-hero-booking"
-              >
-                Agendar Visita
-              </button>
-              <button
                 onClick={onOpenChat}
-                className="btn-secondary px-6 py-3.5 rounded-sm cursor-pointer flex items-center justify-center gap-1.5 hover:border-[#2563eb]/50 transition-colors"
+                className="hero-credit-button px-8 py-3.5 rounded-sm cursor-pointer flex items-center justify-center gap-2"
                 id="btn-hero-chat"
               >
-                <Zap className="w-4 h-4 text-[#60a5fa] animate-pulse" />
-                Asesoría de Crédito
+                <Zap className="w-4 h-4 text-[#ed111d]" />
+                Evaluar mi crédito
               </button>
             </motion.div>
 
@@ -142,13 +172,13 @@ export default function Hero({ onExploreCatalog, onBookAppointment, onOpenChat }
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.5 }}
-              className="grid grid-cols-3 gap-6 pt-6 border-t border-[#1e2e4a] max-w-md mx-auto lg:mx-0"
+              className="grid grid-cols-3 gap-3 sm:gap-6 pt-6 border-t border-white/15 max-w-md mx-auto lg:mx-0"
             >
               <div className="text-center lg:text-left">
                 <p className="text-xl font-bold text-white font-mono">+20 AÑOS</p>
                 <p className="text-[10px] text-zinc-400 uppercase tracking-wider font-sans">En el mercado</p>
               </div>
-              <div className="text-center lg:text-left border-x border-[#1e2e4a]/60 px-4">
+              <div className="text-center lg:text-left border-x border-white/15 px-2 sm:px-4">
                 <p className="text-xl font-bold text-white font-mono">3 SEDES</p>
                 <p className="text-[10px] text-zinc-400 uppercase tracking-wider font-sans">Lima y Callao</p>
               </div>
@@ -164,243 +194,159 @@ export default function Hero({ onExploreCatalog, onBookAppointment, onOpenChat }
               initial={{ opacity: 0, scale: 0.97 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="bg-[#131c2e]/95 backdrop-blur-md border border-[#1e2e4a] rounded-sm p-6 md:p-8 shadow-2xl relative overflow-hidden"
+              className="hero-feature-panel bg-[#0a2a53]/88 backdrop-blur-sm border border-[#21466f] rounded-sm p-6 md:p-8 shadow-2xl relative overflow-hidden"
             >
-              <div className="absolute -top-[100px] -right-[100px] w-56 h-56 bg-blue-600/10 rounded-full blur-[80px] pointer-events-none" />
+              <div className="absolute -top-[100px] -right-[100px] w-56 h-56 bg-[#ed111d]/10 rounded-full blur-[80px] pointer-events-none" />
 
-              <div className="flex border-b border-[#1e2e4a] mb-6">
+              <div className="hero-feature-tabs" role="tablist" aria-label="Información destacada de EPSA Motor">
                 <button
+                  type="button"
                   onClick={() => setActiveTab("video")}
-                  className={`flex-1 pb-3 text-xs font-bold uppercase tracking-wider border-b-2 cursor-pointer transition-all ${
-                    activeTab === "video"
-                      ? "text-[#60a5fa] border-[#2563eb]"
-                      : "text-zinc-400 border-transparent hover:text-zinc-200"
-                  }`}
+                  className={`hero-feature-tab ${activeTab === "video" ? "is-active" : ""}`}
+                  role="tab"
+                  aria-selected={activeTab === "video"}
                 >
                   Showroom
                 </button>
                 <button
+                  type="button"
                   onClick={() => setActiveTab("tech")}
-                  className={`flex-1 pb-3 text-xs font-bold uppercase tracking-wider border-b-2 cursor-pointer transition-all ${
-                    activeTab === "tech"
-                      ? "text-[#60a5fa] border-[#2563eb]"
-                      : "text-zinc-400 border-transparent hover:text-zinc-200"
-                  }`}
+                  className={`hero-feature-tab ${activeTab === "tech" ? "is-active" : ""}`}
+                  role="tab"
+                  aria-selected={activeTab === "tech"}
                 >
                   Innovación DTS-i
                 </button>
                 <button
+                  type="button"
                   onClick={() => setActiveTab("credit")}
-                  className={`flex-1 pb-3 text-xs font-bold uppercase tracking-wider border-b-2 cursor-pointer transition-all ${
-                    activeTab === "credit"
-                      ? "text-[#60a5fa] border-[#2563eb]"
-                      : "text-zinc-400 border-transparent hover:text-zinc-200"
-                  }`}
+                  className={`hero-feature-tab ${activeTab === "credit" ? "is-active" : ""}`}
+                  role="tab"
+                  aria-selected={activeTab === "credit"}
                 >
                   Crédito
                 </button>
               </div>
 
-              <AnimatePresence mode="wait">
-                {activeTab === "video" ? (
-                  <motion.div
-                    key="video-tab"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.3 }}
-                    className="space-y-4"
-                  >
-                    <div className="relative rounded-sm overflow-hidden border border-[#1e2e4a] bg-black aspect-video">
-                      <video
-                        className="w-full h-full object-cover"
-                        autoPlay
-                        loop
-                        muted
-                        playsInline
-                        poster="/assets/media/images/FONDO-TORITO-TITANIO-250-1920X760.jpg"
-                      >
-                        <source src="/assets/media/video/video-index.mp4" type="video/mp4" />
-                      </video>
-                      <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-[#131c2e]/95 border border-[#1e2e4a] px-2.5 py-1 rounded-sm text-[10px] font-bold uppercase tracking-wider text-[#60a5fa]">
-                        <Play className="w-3 h-3" />
-                        EPSA en acción
-                      </div>
-                    </div>
-                    {featured && (
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={featured.imageUrl}
-                          alt={featured.name}
-                          className="w-14 h-14 object-contain bg-[#0a1120] border border-[#1e2e4a] rounded-sm p-1"
-                        />
-                        <div className="text-left min-w-0">
-                          <p className="text-[10px] text-[#60a5fa] font-bold uppercase tracking-wider">
-                            Destacado
-                          </p>
-                          <p className="text-sm font-bold text-white truncate">{featured.name}</p>
-                          <p className="text-xs text-zinc-400">
-                            {formatPrice(featured.basePrice)} · {featured.power}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                    <button
-                      onClick={onExploreCatalog}
-                      className="w-full btn-primary py-2.5 text-xs font-bold uppercase tracking-wider rounded-sm cursor-pointer"
+              <div className="hero-tab-stage">
+                <AnimatePresence mode="wait">
+                  {activeTab === "video" ? (
+                    <motion.div
+                      key="video-tab"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.26 }}
+                      className="hero-tab-content"
                     >
-                      Ver todos los modelos
-                    </button>
-                  </motion.div>
-                ) : activeTab === "tech" ? (
-                  <motion.div
-                    key="tech-tab"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.3 }}
-                    className="space-y-6"
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <span className="text-[#60a5fa] text-[10px] uppercase tracking-wider font-bold">
-                          Tecnología Patentada
-                        </span>
-                        <h3 className="text-base font-bold text-white mt-1">Triple Bujía Digital (DTS-i)</h3>
-                      </div>
-                      <span className="bg-[#1a263e] text-white border border-[#1e2e4a] px-2.5 py-1 rounded-sm text-[10px] font-mono font-bold uppercase tracking-wider">
-                        Exclusivo Bajaj
-                      </span>
-                    </div>
-
-                    <div className="h-44 bg-[#0a1120] rounded-sm relative overflow-hidden border border-[#1e2e4a] flex flex-col items-center justify-center p-4">
-                      <div className="absolute inset-0 bg-[radial-gradient(#1e2e4a_1px,transparent_1px)] [background-size:16px_16px] opacity-40" />
-
-                      <div className="relative z-10 flex items-center justify-around w-full max-w-sm mt-2">
-                        {[0, 1, 2].map((i) => (
-                          <div key={i} className="flex flex-col items-center space-y-2">
-                            <motion.div
-                              animate={{
-                                scale: pulseCount === i ? [1, 1.15, 1] : 1,
-                                borderColor: pulseCount === i ? "#60a5fa" : "#1e2e4a",
-                                backgroundColor:
-                                  pulseCount === i ? "rgba(37, 99, 235, 0.2)" : "#131c2e",
-                              }}
-                              transition={{ duration: 0.4 }}
-                              className="w-11 h-11 rounded-full border flex items-center justify-center text-zinc-400"
-                            >
-                              <Zap
-                                className={`w-5 h-5 ${
-                                  pulseCount === i ? "text-[#60a5fa] animate-bounce" : "text-zinc-500"
-                                }`}
-                              />
-                            </motion.div>
-                            <span
-                              className={`text-[9px] font-mono font-bold tracking-wider ${
-                                pulseCount === i ? "text-white" : "text-zinc-500"
-                              }`}
-                            >
-                              BUJÍA {i + 1}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-
-                      <p className="text-[10px] text-[#60a5fa] font-mono font-bold mt-4 tracking-wider uppercase flex items-center gap-1">
-                        <Cpu className="w-3.5 h-3.5 animate-spin" style={{ animationDuration: "4s" }} />
-                        Encendido Digital Secuencial Multi-Punto
-                      </p>
-                    </div>
-
-                    <div className="space-y-3 text-xs">
-                      <div className="flex items-start gap-2 text-zinc-300">
-                        <CheckCircle2 className="w-4 h-4 text-[#60a5fa] shrink-0 mt-0.5" />
-                        <span>
-                          <strong className="text-white font-medium">Combustión Óptima</strong>: 27% más ahorro de
-                          combustible que un motor convencional de 2 bujías.
-                        </span>
-                      </div>
-                      <div className="flex items-start gap-2 text-zinc-300">
-                        <CheckCircle2 className="w-4 h-4 text-[#60a5fa] shrink-0 mt-0.5" />
-                        <span>
-                          <strong className="text-white font-medium">Menor Emisión</strong>: Diseñado para cumplir con
-                          rigurosas normas ecológicas con GNV original.
-                        </span>
-                      </div>
-                    </div>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="credit-tab"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.3 }}
-                    className="space-y-6"
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <span className="text-[#60a5fa] text-[10px] uppercase tracking-wider font-bold">
-                          Evaluación Inmediata
-                        </span>
-                        <h3 className="text-base font-bold text-white mt-1">Línea de Crédito Directo</h3>
-                      </div>
-                      <span className="bg-[#1a263e] text-[#60a5fa] border border-[#1e2e4a] px-2.5 py-1 rounded-sm text-[10px] font-bold uppercase tracking-wider animate-pulse">
-                        Sola Firma
-                      </span>
-                    </div>
-
-                    <div className="space-y-4">
-                      {[
-                        {
-                          n: "1",
-                          t: "Presenta tu DNI",
-                          d: "Vigente y con dirección local en Lima o Callao.",
-                        },
-                        {
-                          n: "2",
-                          t: "Recibo de Servicios",
-                          d: "Luz o Agua que certifique tu residencia familiar.",
-                        },
-                        {
-                          n: "✓",
-                          t: "¡Aprobado al Instante!",
-                          d: "Evaluamos tu historial comercial y fijamos la inicial.",
-                          ok: true,
-                        },
-                      ].map((step) => (
-                        <div
-                          key={step.n}
-                          className="bg-[#0a1120] border border-[#1e2e4a] p-3 rounded-sm flex items-center gap-4"
+                      <div className="hero-tab-media">
+                        <video
+                          autoPlay
+                          muted
+                          playsInline
+                          onLoadedMetadata={syncVideoWithCarousel}
+                          poster="/assets/media/images/FONDO-TORITO-TITANIO-250-1920X760.jpg"
                         >
-                          <span
-                            className={`w-7 h-7 rounded-full border flex items-center justify-center font-bold text-xs ${
-                              step.ok
-                                ? "bg-emerald-500/10 border-emerald-500/40 text-emerald-400"
-                                : "bg-[#2563eb]/20 border-[#2563eb] text-[#60a5fa]"
-                            }`}
-                          >
-                            {step.n}
-                          </span>
-                          <div className="text-xs">
-                            <p className="font-bold text-white">{step.t}</p>
-                            <p className="text-[11px] text-zinc-400 mt-0.5">{step.d}</p>
-                          </div>
+                          <source src="/assets/media/video/video-index.mp4" type="video/mp4" />
+                        </video>
+                        <span className="hero-tab-media__badge">
+                          <Play aria-hidden="true" />
+                          EPSA en acción
+                        </span>
+                      </div>
+
+                      <div className="hero-tab-copy">
+                        <span>Unidad destacada</span>
+                        <h3>{featured.name}</h3>
+                        <p>{formatPrice(featured.basePrice)} · {featured.power}</p>
+                        <div>
+                          <small>{featured.fuelTypes.join(" / ")}</small>
+                          <small>Prueba de manejo</small>
                         </div>
-                      ))}
-                    </div>
+                      </div>
 
-                    <button
-                      onClick={onOpenChat}
-                      className="w-full btn-primary py-3 px-4 text-xs font-bold uppercase tracking-wider rounded-sm text-center shadow-lg hover:scale-102 transition-transform cursor-pointer"
+                      <button type="button" className="hero-tab-cta" onClick={onExploreCatalog}>
+                        Ver todos los modelos
+                      </button>
+                    </motion.div>
+                  ) : activeTab === "tech" ? (
+                    <motion.div
+                      key="tech-tab"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.26 }}
+                      className="hero-tab-content"
                     >
-                      Pre-evaluar mi Crédito Ahora
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                      <div className="hero-tab-media">
+                        <video
+                          autoPlay
+                          muted
+                          playsInline
+                          onLoadedMetadata={syncVideoWithCarousel}
+                          poster="/assets/media/images/dtsi-twin-spark-poster.webp"
+                        >
+                          <source src="/assets/media/video/dtsi-twin-spark-loop.mp4" type="video/mp4" />
+                        </video>
+                        <span className="hero-tab-media__badge">
+                          <Zap aria-hidden="true" />
+                          Loop técnico DTS-i
+                        </span>
+                      </div>
 
-              <div className="mt-6 pt-4 border-t border-[#1e2e4a] flex items-center justify-between gap-3 text-[11px] text-zinc-400">
+                      <div className="hero-tab-copy">
+                        <span>Encendido digital coordinado</span>
+                        <h3>Doble bujía DTS-i</h3>
+                        <p>Dos chispas aceleran y completan mejor la combustión dentro del cilindro.</p>
+                        <div>
+                          <small>Mejor rendimiento</small>
+                          <small>Respuesta eficiente</small>
+                        </div>
+                      </div>
+
+                      <button type="button" className="hero-tab-cta" onClick={onExploreCatalog}>
+                        Ver modelos con DTS-i
+                      </button>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="credit-tab"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.26 }}
+                      className="hero-tab-content"
+                    >
+                      <div className="hero-tab-media">
+                        <img
+                          src="/assets/media/images/benefit-credito-directo.webp"
+                          alt="Asesoría para solicitar crédito directo EPSA"
+                        />
+                        <span className="hero-tab-media__badge">
+                          <ShieldCheck aria-hidden="true" />
+                          Evaluación directa
+                        </span>
+                      </div>
+
+                      <div className="hero-tab-copy">
+                        <span>Financiamiento EPSA</span>
+                        <h3>Crédito directo flexible</h3>
+                        <p>Presenta tus documentos y recibe una evaluación según tu perfil.</p>
+                        <div>
+                          <small>DNI vigente</small>
+                          <small>Recibo de servicios</small>
+                        </div>
+                      </div>
+
+                      <button type="button" className="hero-tab-cta" onClick={onOpenChat}>
+                        Evaluar mi crédito
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              <div className="mt-6 pt-4 border-t border-[#21466f] flex items-center justify-between gap-3 text-[11px] text-zinc-400">
                 <span className="flex items-center gap-1.5">
                   <ShieldCheck className="w-4 h-4 text-emerald-500" />
                   Venta Oficial

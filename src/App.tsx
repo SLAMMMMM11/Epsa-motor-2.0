@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Hero from "./components/Hero";
 import Catalog from "./components/Catalog";
 import BookingForm from "./components/BookingForm";
@@ -9,98 +9,119 @@ import AmbientBackground from "./components/AmbientBackground";
 import ModelComparer from "./components/ModelComparer";
 import EarningCalculator from "./components/EarningCalculator";
 import AboutUs from "./components/AboutUs";
-import { TESTIMONIALS, CONTACT, BRANCHES } from "./data";
+import ModelFinder from "./components/ModelFinder";
+import ContactDock from "./components/ContactDock";
+import ThemeToggle from "./components/ThemeToggle";
+import ProductPage from "./components/ProductPage";
+import { TESTIMONIALS, CONTACT, BRANCHES, getModelById } from "./data";
 import { motion, AnimatePresence } from "motion/react";
-import { MessageSquare, MessageCircle, FileText, Sparkles, Award, Star, PhoneCall, Check } from "lucide-react";
+import { Award, FileText, MapPinned, Menu, MessageSquare, Star, X } from "lucide-react";
 
-// Web Audio API Synthesizer for a premium, low-volume double chime
-const playWspChime = () => {
-  try {
-    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioContextClass) return;
-    const ctx = new AudioContextClass();
-    const now = ctx.currentTime;
+const NAV_ITEMS = [
+  { label: "Inicio", section: "hero-section" },
+  { label: "Tu Torito", section: "finder-section" },
+  { label: "Nosotros", section: "about-section" },
+  { label: "Modelos", section: "catalog-section" },
+  { label: "Comparar", section: "comparer-section" },
+  { label: "Rentabilidad", section: "calculator-section" },
+  { label: "Citas", section: "booking-section" },
+  { label: "Sedes", section: "branches-section" },
+] as const;
 
-    const osc1 = ctx.createOscillator();
-    const osc2 = ctx.createOscillator();
-    const gain1 = ctx.createGain();
-    const gain2 = ctx.createGain();
-
-    // First soft high note (E6)
-    osc1.type = "sine";
-    osc1.frequency.setValueAtTime(1318.51, now); 
-    gain1.gain.setValueAtTime(0.03, now);
-    gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
-
-    // Second soft high note (A6) slightly delayed for a pleasant double-chime effect
-    osc2.type = "sine";
-    osc2.frequency.setValueAtTime(1760, now + 0.08); 
-    gain2.gain.setValueAtTime(0.03, now + 0.08);
-    gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
-
-    osc1.connect(gain1);
-    gain1.connect(ctx.destination);
-
-    osc2.connect(gain2);
-    gain2.connect(ctx.destination);
-
-    osc1.start(now);
-    osc1.stop(now + 0.15);
-
-    osc2.start(now + 0.08);
-    osc2.stop(now + 0.3);
-  } catch (e) {
-    console.debug("Audio context blocked by browser autoplay policy until interaction.", e);
-  }
-};
+const BENEFIT_CARDS = [
+  {
+    title: "Crédito Directo Flexible",
+    copy: "Evaluamos tu historial crediticio con tu DNI y un recibo de servicios. Diseñamos cuotas a tu medida para facilitar el pago progresivo.",
+    image: "/assets/media/images/benefit-credito-directo-modelo-real.png",
+    alt: "Asesoría para solicitar crédito directo en EPSA Motor",
+    icon: Award,
+  },
+  {
+    title: "Trámite de Placa Sunarp",
+    copy: "Gestionamos el registro de placa y tarjeta de propiedad de manera gratuita y veloz con la compra de tu mototaxi nuevo.",
+    image: "/assets/media/images/benefit-tramite-placa-modelo-real-v2.png",
+    alt: "Placa peruana y documentos para el trámite registral en Sunarp",
+    icon: FileText,
+  },
+  {
+    title: "3 Sedes en Lima y Callao",
+    copy: "Atiéndete en Comas, Ventanilla o Puente Piedra para ver unidades, cotizar y evaluar tu crédito con un asesor.",
+    image: "/assets/media/images/benefit-sedes-lima-callao.webp",
+    alt: "Mapa de Lima y Callao con las sedes de EPSA Motor",
+    icon: MapPinned,
+  },
+  {
+    title: "Asesoría Comercial",
+    copy: "Cotiza por WhatsApp, agenda una prueba de manejo o visita la sede. Te ayudamos a elegir el modelo ideal para tu negocio.",
+    image: "/assets/media/images/benefit-asesoria-whatsapp-modelo-real.png",
+    alt: "Asesora comercial de EPSA Motor atendiendo por WhatsApp",
+    icon: MessageSquare,
+  },
+] as const;
 
 export default function App() {
   const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const [selectedModelForBooking, setSelectedModelForBooking] = useState<string>("");
-  const [showWspTooltip, setShowWspTooltip] = useState<boolean>(false);
-  const [showCallTooltip, setShowCallTooltip] = useState<boolean>(false);
-  const [isWspHovered, setIsWspHovered] = useState<boolean>(false);
-  const hasPlayedWspSound = useRef<boolean>(false);
-  const [sparkles, setSparkles] = useState<Array<{ id: number; size: number; x: number; y: number; color: string }>>([]);
+  const [currentPath, setCurrentPath] = useState(() => window.location.pathname);
+  const [activeSection, setActiveSection] = useState<string>("hero-section");
+
+  const productId = currentPath.match(/^\/modelos\/([^/]+)\/?$/)?.[1];
+  const activeProduct = productId ? getModelById(decodeURIComponent(productId)) : null;
 
   useEffect(() => {
-    const triggerSparkles = () => {
-      const colors = ["#25d366", "#a3f3be", "#fde047", "#131c2e"];
-      const count = 4 + Math.floor(Math.random() * 3); // 4 to 6 sparkles
-      const newSparkles = Array.from({ length: count }).map((_, i) => {
-        const angle = Math.random() * Math.PI * 2;
-        const distance = 15 + Math.random() * 25; // start distance from button center
-        const targetX = Math.cos(angle) * distance;
-        const targetY = Math.sin(angle) * distance;
-        
-        return {
-          id: Date.now() + i + Math.random(),
-          size: 3 + Math.random() * 5, // 3px to 8px
-          x: targetX,
-          y: targetY,
-          color: colors[Math.floor(Math.random() * colors.length)],
-        };
-      });
-
-      setSparkles(newSparkles);
-
-      // Clean up sparkles after animation finishes (1.5 seconds)
-      setTimeout(() => {
-        setSparkles((current) => current.filter((s) => !newSparkles.some((ns) => ns.id === s.id)));
-      }, 1500);
+    const handlePopState = () => {
+      setCurrentPath(window.location.pathname);
+      window.scrollTo({ top: 0, behavior: "instant" });
     };
 
-    // Trigger sparkles every 4.5 seconds
-    const interval = setInterval(triggerSparkles, 4500);
-    
-    // Trigger initially after 2 seconds
-    const initialTimeout = setTimeout(triggerSparkles, 2000);
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  useEffect(() => {
+    if (currentPath !== "/") {
+      setActiveSection("catalog-section");
+      return;
+    }
+
+    const updateNavigationState = () => {
+      const marker = Math.min(220, window.innerHeight * 0.28);
+      let nextSection: string = NAV_ITEMS[0].section;
+
+      for (const item of NAV_ITEMS) {
+        const section = document.getElementById(item.section);
+        if (!section) continue;
+
+        const bounds = section.getBoundingClientRect();
+        if (bounds.top <= marker) {
+          nextSection = item.section;
+        }
+        if (bounds.top <= marker && bounds.bottom >= marker) {
+          nextSection = item.section;
+          break;
+        }
+      }
+
+      setActiveSection(nextSection);
+    };
+
+    const frame = window.requestAnimationFrame(updateNavigationState);
+    window.addEventListener("scroll", updateNavigationState, { passive: true });
+    window.addEventListener("resize", updateNavigationState);
 
     return () => {
-      clearInterval(interval);
-      clearTimeout(initialTimeout);
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", updateNavigationState);
+      window.removeEventListener("resize", updateNavigationState);
     };
-  }, []);
+  }, [currentPath]);
+
+  const handleViewProduct = (modelId: string) => {
+    window.history.pushState({}, "", `/modelos/${modelId}`);
+    setCurrentPath(`/modelos/${modelId}`);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const handleSelectModelForBooking = (modelName: string) => {
     setSelectedModelForBooking(modelName);
@@ -113,6 +134,28 @@ export default function App() {
   };
 
   const scrollToSection = (id: string) => {
+    setIsMobileMenuOpen(false);
+    setActiveSection(id);
+
+    if (activeProduct) {
+      window.history.pushState({}, "", "/");
+      setCurrentPath("/");
+      window.setTimeout(() => {
+        if (id === "hero-section") {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          return;
+        }
+
+        document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+      }, 80);
+      return;
+    }
+
+    if (id === "hero-section") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
     const section = document.getElementById(id);
     if (section) {
       section.scrollIntoView({ behavior: "smooth" });
@@ -120,88 +163,123 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#060a13] text-white font-sans flex flex-col justify-between selection:bg-[#2563eb]/30 selection:text-white relative">
+    <div className="app-shell min-h-screen font-sans flex flex-col justify-between selection:bg-[#ed111d]/20 relative">
       <AmbientBackground />
 
-      {/* Premium Minimalist Navbar */}
-      <header className="sticky top-0 z-40 bg-[#060a13]/90 backdrop-blur-md border-b border-[#1e2e4a] px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3 sm:gap-4">
-            <Logo className="w-9 h-9 shrink-0 text-white" />
-            <div className="hidden sm:block h-8 w-px bg-[#1e2e4a]" aria-hidden="true" />
-            <div className="flex items-center gap-2 sm:gap-3">
-              <img
-                src="/assets/media/images/RE_torito.png"
-                alt="Torito Bajaj"
-                className="h-7 sm:h-8 w-auto object-contain opacity-95"
-              />
-              <img
-                src="/assets/media/images/bajaj_favorita.png"
-                alt="Bajaj favorita del Perú"
-                className="h-7 sm:h-8 w-auto object-contain opacity-95"
-              />
-            </div>
-            <div className="hidden md:block">
-              <h1 className="font-display font-bold text-sm tracking-tight text-white uppercase leading-none">
-                EPSA Motor
-              </h1>
-              <p className="text-[9px] text-[#60a5fa] uppercase tracking-widest font-bold mt-0.5">
-                Concesionario Autorizado Bajaj
-              </p>
-            </div>
-          </div>
+      <header className="legacy-site-header sticky top-0 z-40 border-b border-[#21466f] bg-[#071e3d] px-4 py-3 backdrop-blur-md sm:px-6">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+          <button
+            type="button"
+            onClick={() => scrollToSection("hero-section")}
+            aria-label="Ir al inicio"
+            className="legacy-brand-lockup"
+          >
+            <Logo className="w-[126px] h-9 sm:w-[148px] sm:h-10" variant="inverse" />
+            <span className="legacy-brand-divider hidden sm:block" aria-hidden="true" />
+            <span className="legacy-partner-logos hidden sm:flex">
+              <img src="/assets/media/images/RE_torito.png" alt="Torito Bajaj" />
+              <img src="/assets/media/images/bajaj_favorita.png" alt="Bajaj favorita del Perú" />
+            </span>
+          </button>
 
-          <nav className="hidden md:flex items-center gap-8 text-[11px] font-bold uppercase tracking-wider text-zinc-400">
-            <button onClick={() => scrollToSection("hero-section")} className="hover:text-[#60a5fa] transition-colors cursor-pointer">
-              Inicio
-            </button>
-            <button onClick={() => scrollToSection("benefits-section")} className="hover:text-[#60a5fa] transition-colors cursor-pointer">
-              Beneficios
-            </button>
-            <button onClick={() => scrollToSection("about-section")} className="hover:text-[#60a5fa] transition-colors cursor-pointer">
-              Nosotros
-            </button>
-            <button onClick={() => scrollToSection("catalog-section")} className="hover:text-[#60a5fa] transition-colors cursor-pointer">
-              Modelos
-            </button>
-            <button onClick={() => scrollToSection("comparer-section")} className="hover:text-[#60a5fa] transition-colors cursor-pointer">
-              Comparar
-            </button>
-            <button onClick={() => scrollToSection("calculator-section")} className="hover:text-[#60a5fa] transition-colors cursor-pointer">
-              Rentabilidad
-            </button>
-            <button onClick={() => scrollToSection("booking-section")} className="hover:text-[#60a5fa] transition-colors cursor-pointer">
-              Citas
-            </button>
-            <button onClick={() => scrollToSection("branches-section")} className="hover:text-[#60a5fa] transition-colors cursor-pointer">
-              Sedes
-            </button>
+          <nav className="legacy-desktop-nav hidden xl:flex" aria-label="Navegación principal">
+            {NAV_ITEMS.map((item) => (
+              <button
+                key={item.section}
+                type="button"
+                onClick={() => scrollToSection(item.section)}
+                className={activeSection === item.section ? "is-active" : ""}
+                aria-current={activeSection === item.section ? "location" : undefined}
+              >
+                {item.label}
+              </button>
+            ))}
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex shrink-0 items-center gap-2">
+            <ThemeToggle />
             <button
               onClick={() => setIsChatOpen(true)}
-              className="btn-primary px-5 py-2.5 rounded-sm cursor-pointer shadow-sm"
+              className="btn-primary hidden rounded-sm px-4 py-2.5 sm:inline-flex"
               id="btn-nav-chat"
             >
-              Asesoría de Crédito
+              Asesoría de crédito
+            </button>
+            <button
+              type="button"
+              className="mobile-menu-toggle xl:hidden"
+              onClick={() => setIsMobileMenuOpen((current) => !current)}
+              aria-expanded={isMobileMenuOpen}
+              aria-controls="mobile-navigation"
+              aria-label={isMobileMenuOpen ? "Cerrar menú" : "Abrir menú"}
+            >
+              {isMobileMenuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
             </button>
           </div>
         </div>
+
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.nav
+              id="mobile-navigation"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.18 }}
+              className="mobile-nav-panel absolute left-0 right-0 top-full border-t border-b px-3 py-3 xl:hidden"
+            >
+              <div className="mobile-nav-header max-w-7xl mx-auto">
+                <span>Navegación</span>
+                <small>Distribuidor autorizado Bajaj</small>
+              </div>
+              <div className="mobile-nav-grid max-w-7xl mx-auto grid sm:grid-cols-2">
+                {NAV_ITEMS.map((item) => (
+                  <button
+                    key={item.section}
+                    type="button"
+                    onClick={() => scrollToSection(item.section)}
+                    className={`mobile-nav-link${activeSection === item.section ? " is-active" : ""}`}
+                    aria-current={activeSection === item.section ? "location" : undefined}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  className="mobile-nav-link cursor-pointer sm:hidden"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    setIsChatOpen(true);
+                  }}
+                >
+                  Evaluar mi crédito
+                </button>
+              </div>
+            </motion.nav>
+          )}
+        </AnimatePresence>
       </header>
 
       {/* Main Content */}
       <main className="flex-grow">
+        {activeProduct ? (
+          <ProductPage
+            model={activeProduct}
+            onBack={() => scrollToSection("catalog-section")}
+            onQuote={handleSelectModelForBooking}
+            onViewProduct={handleViewProduct}
+          />
+        ) : (
+          <>
         
         {/* HERO SECTION */}
         <Hero
           onExploreCatalog={() => scrollToSection("catalog-section")}
-          onBookAppointment={() => scrollToSection("booking-section")}
           onOpenChat={() => setIsChatOpen(true)}
         />
 
         {/* BENEFITS / WHY CHOOSE EPSA MOTOR */}
-        <section className="py-20 bg-[#0a1120]/60 border-b border-[#1e2e4a] relative" id="benefits-section">
+        <section className="brand-light-section py-20 border-b relative" id="benefits-section">
           <div className="max-w-7xl mx-auto px-6">
             
             {/* Elegant Header */}
@@ -212,12 +290,12 @@ export default function App() {
               transition={{ duration: 0.6, ease: "easeOut" }}
               className="text-center max-w-2xl mx-auto mb-16"
             >
-              <span className="text-[#60a5fa] text-xs font-bold uppercase tracking-widest block mb-2">Respaldo Integral</span>
-              <h2 className="text-3xl sm:text-4xl font-display font-bold text-white tracking-tight leading-tight">
+              <span className="brand-kicker text-xs font-bold uppercase tracking-widest block mb-2">Respaldo Integral</span>
+              <h2 className="brand-section-title text-3xl sm:text-4xl font-display font-bold tracking-tight leading-tight">
                 ¿Por qué elegir EPSA Motor?
               </h2>
-              <p className="text-zinc-400 mt-4 text-xs md:text-sm leading-relaxed font-sans">
-                <strong className="text-white font-medium">{CONTACT.yearsInMarketLabel}</strong> acompañando
+              <p className="brand-section-copy mt-4 text-xs md:text-sm leading-relaxed font-sans">
+                <strong className="font-medium">{CONTACT.yearsInMarketLabel}</strong> acompañando
                 emprendedores en Lima y Callao. Venta y financiamiento de Torito Bajaj con respaldo formal (RUC{" "}
                 {CONTACT.ruc}).
               </p>
@@ -238,73 +316,27 @@ export default function App() {
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
             >
               
-              {/* Card 1: Crédito */}
-              <motion.div
-                variants={{
-                  hidden: { opacity: 0, y: 30 },
-                  visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 16 } }
-                }}
-                className="bg-[#131c2e]/80 backdrop-blur-sm border border-[#1e2e4a] p-6 rounded-sm space-y-4 hover:border-[#3b82f6] hover:shadow-[0_0_25px_rgba(37,99,235,0.15)] transition-all duration-500 shadow-sm group"
-              >
-                <div className="w-10 h-10 rounded-xl bg-[#1a263e] border border-[#1e2e4a] flex items-center justify-center text-[#60a5fa] shadow-xs group-hover:scale-110 transition-transform duration-300">
-                  <Award className="w-5 h-5" />
-                </div>
-                <h3 className="text-sm font-bold text-[#f1f5f9] uppercase tracking-wider">Crédito Directo Flexible</h3>
-                <p className="text-xs text-[#a1a1aa] leading-relaxed">
-                  Evaluamos tu historial crediticio con tu DNI y un recibo de servicios. Diseñamos cuotas a tu medida para facilitar el pago progresivo.
-                </p>
-              </motion.div>
-
-              {/* Card 2: Papeles express */}
-              <motion.div
-                variants={{
-                  hidden: { opacity: 0, y: 30 },
-                  visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 16 } }
-                }}
-                className="bg-[#131c2e]/80 backdrop-blur-sm border border-[#1e2e4a] p-6 rounded-sm space-y-4 hover:border-[#3b82f6] hover:shadow-[0_0_25px_rgba(37,99,235,0.15)] transition-all duration-500 shadow-sm group"
-              >
-                <div className="w-10 h-10 rounded-xl bg-[#1a263e] border border-[#1e2e4a] flex items-center justify-center text-[#60a5fa] shadow-xs group-hover:scale-110 transition-transform duration-300">
-                  <FileText className="w-5 h-5" />
-                </div>
-                <h3 className="text-sm font-bold text-[#f1f5f9] uppercase tracking-wider">Trámite de Placa Sunarp</h3>
-                <p className="text-xs text-[#a1a1aa] leading-relaxed">
-                  Gestionamos el registro de placa y tarjeta de propiedad de manera gratuita y veloz con la compra de tu mototaxi nuevo.
-                </p>
-              </motion.div>
-
-              {/* Card 3: Sedes */}
-              <motion.div
-                variants={{
-                  hidden: { opacity: 0, y: 30 },
-                  visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 16 } }
-                }}
-                className="bg-[#131c2e]/80 backdrop-blur-sm border border-[#1e2e4a] p-6 rounded-sm space-y-4 hover:border-[#3b82f6] hover:shadow-[0_0_25px_rgba(37,99,235,0.15)] transition-all duration-500 shadow-sm group"
-              >
-                <div className="w-10 h-10 rounded-xl bg-[#1a263e] border border-[#1e2e4a] flex items-center justify-center text-[#60a5fa] shadow-xs group-hover:scale-110 transition-transform duration-300">
-                  <Sparkles className="w-5 h-5" />
-                </div>
-                <h3 className="text-sm font-bold text-[#f1f5f9] uppercase tracking-wider">3 Sedes en Lima y Callao</h3>
-                <p className="text-xs text-[#a1a1aa] leading-relaxed">
-                  Atiéndete en Comas, Ventanilla o Puente Piedra para ver unidades, cotizar y evaluar tu crédito con un asesor.
-                </p>
-              </motion.div>
-
-              {/* Card 4: Atención comercial */}
-              <motion.div
-                variants={{
-                  hidden: { opacity: 0, y: 30 },
-                  visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 16 } }
-                }}
-                className="bg-[#131c2e]/80 backdrop-blur-sm border border-[#1e2e4a] p-6 rounded-sm space-y-4 hover:border-[#3b82f6] hover:shadow-[0_0_25px_rgba(37,99,235,0.15)] transition-all duration-500 shadow-sm group"
-              >
-                <div className="w-10 h-10 rounded-xl bg-[#1a263e] border border-[#1e2e4a] flex items-center justify-center text-[#60a5fa] shadow-xs group-hover:scale-110 transition-transform duration-300">
-                  <MessageSquare className="w-5 h-5" />
-                </div>
-                <h3 className="text-sm font-bold text-[#f1f5f9] uppercase tracking-wider">Asesoría Comercial</h3>
-                <p className="text-xs text-[#a1a1aa] leading-relaxed">
-                  Cotiza por WhatsApp, agenda una prueba de manejo o visita la sede. Te ayudamos a elegir el modelo ideal para tu negocio.
-                </p>
-              </motion.div>
+              {BENEFIT_CARDS.map(({ title, copy, image, alt, icon: Icon }) => (
+                <motion.article
+                  key={title}
+                  variants={{
+                    hidden: { opacity: 0, y: 30 },
+                    visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 16 } }
+                  }}
+                  className="brand-benefit-card group"
+                >
+                  <div className="brand-benefit-media brand-benefit-media--photo">
+                    <img src={image} alt={alt} loading="lazy" />
+                    <div className="brand-benefit-icon">
+                      <Icon aria-hidden="true" />
+                    </div>
+                  </div>
+                  <div className="brand-benefit-body">
+                    <h3 className="brand-card-title">{title}</h3>
+                    <p className="brand-card-copy">{copy}</p>
+                  </div>
+                </motion.article>
+              ))}
 
             </motion.div>
 
@@ -314,8 +346,17 @@ export default function App() {
         {/* QUIÉNES SOMOS — fotos oficiales */}
         <AboutUs />
 
+        {/* SELECTOR GUIADO DE MODELO */}
+        <ModelFinder
+          onSelectModel={handleSelectModelForBooking}
+          onViewProduct={handleViewProduct}
+        />
+
         {/* ONLINE CATALOG */}
-        <Catalog onSelectModelForBooking={handleSelectModelForBooking} />
+        <Catalog
+          onSelectModelForBooking={handleSelectModelForBooking}
+          onViewProduct={handleViewProduct}
+        />
 
         {/* INTERACTIVE MODEL COMPARER */}
         <ModelComparer onSelectModel={handleSelectModelForBooking} />
@@ -324,7 +365,7 @@ export default function App() {
         <EarningCalculator />
 
         {/* REVIEWS & CASE STUDIES (INFINITE MARQUEE STRIP) */}
-        <section className="py-24 bg-[#060a13] border-b border-[#1e2e4a] relative overflow-hidden" id="testimonials-section">
+        <section className="testimonials-section py-24 border-b relative overflow-hidden" id="testimonials-section">
           {/* Subtle decorative background glow */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
 
@@ -342,10 +383,10 @@ export default function App() {
           </div>
 
           {/* Marquee Container */}
-          <div className="w-full relative py-4 space-y-6 overflow-hidden pause-marquee">
+          <div className="w-full relative py-4 space-y-6 overflow-hidden">
             {/* Left & Right gradient edge fades */}
-            <div className="absolute left-0 top-0 bottom-0 w-16 sm:w-48 bg-gradient-to-r from-[#060a13] to-transparent z-20 pointer-events-none" />
-            <div className="absolute right-0 top-0 bottom-0 w-16 sm:w-48 bg-gradient-to-l from-[#060a13] to-transparent z-20 pointer-events-none" />
+            <div className="testimonial-edge testimonial-edge--left absolute left-0 top-0 bottom-0 w-16 sm:w-48 z-20 pointer-events-none" />
+            <div className="testimonial-edge testimonial-edge--right absolute right-0 top-0 bottom-0 w-16 sm:w-48 z-20 pointer-events-none" />
 
             {/* Marquee Row 1 - Left to Right */}
             <div className="flex w-max relative">
@@ -354,32 +395,39 @@ export default function App() {
                 {[...TESTIMONIALS, ...TESTIMONIALS].map((review, idx) => (
                   <div
                     key={`r1-${idx}`}
-                    className="w-[320px] sm:w-[380px] bg-[#131c2e] border border-[#1e2e4a] p-6 rounded-xl flex flex-col justify-between space-y-4 hover:border-[#3b82f6] hover:shadow-[0_0_20px_rgba(59,130,246,0.12)] transition-all duration-300 group shrink-0"
+                    className="testimonial-card w-[320px] sm:w-[380px] p-6 rounded-xl flex flex-col justify-between space-y-4 transition-all duration-300 group shrink-0"
                   >
                     <div className="space-y-3">
                       <div className="flex justify-between items-center">
-                        <div className="flex text-[#60a5fa] gap-0.5">
+                        <div className="flex text-[#fbbf24] gap-0.5" aria-label={`${review.rating} de 5 estrellas`}>
                           {[...Array(review.rating)].map((_, i) => (
                             <Star key={i} className="w-3 h-3 fill-current" />
                           ))}
                         </div>
                         {review.tag && (
-                          <span className="bg-[#1a263e] text-[#60a5fa] border border-[#1e2e4a] text-[9px] font-bold px-2 py-0.5 rounded-xl uppercase tracking-wider">
+                          <span className="testimonial-tag text-[9px] font-bold px-2 py-0.5 rounded-xl uppercase tracking-wider">
                             {review.tag}
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-[#a1a1aa] leading-relaxed italic font-sans">
+                      <p className="testimonial-copy text-xs leading-relaxed italic font-sans">
                         "{review.text}"
                       </p>
                     </div>
-                    <div className="pt-3 border-t border-[#1e2e4a] flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-xl ${review.avatarBg || 'bg-[#1a263e]'} border border-[#1e2e4a] flex items-center justify-center font-bold text-[#f1f5f9] text-xs`}>
-                        {review.initials}
+                    <div className="testimonial-footer pt-3 border-t flex items-center gap-3">
+                      <div
+                        className="testimonial-avatar"
+                        title={review.modelName}
+                      >
+                        <img
+                          src={review.avatarImage}
+                          alt={`${review.modelName} adquirido por ${review.name}`}
+                          loading="lazy"
+                        />
                       </div>
                       <div>
-                        <h4 className="text-xs font-bold text-[#f1f5f9]">{review.name}</h4>
-                        <span className="text-[10px] text-[#a1a1aa] block font-sans">{review.association}</span>
+                        <h4 className="testimonial-author text-xs font-bold">{review.name}</h4>
+                        <span className="testimonial-association text-[10px] block font-sans">{review.association}</span>
                       </div>
                     </div>
                   </div>
@@ -394,32 +442,39 @@ export default function App() {
                 {[...TESTIMONIALS.slice().reverse(), ...TESTIMONIALS.slice().reverse()].map((review, idx) => (
                   <div
                     key={`r2-${idx}`}
-                    className="w-[320px] sm:w-[380px] bg-[#131c2e] border border-[#1e2e4a] p-6 rounded-xl flex flex-col justify-between space-y-4 hover:border-[#3b82f6] hover:shadow-[0_0_20px_rgba(59,130,246,0.12)] transition-all duration-300 group shrink-0"
+                    className="testimonial-card w-[320px] sm:w-[380px] p-6 rounded-xl flex flex-col justify-between space-y-4 transition-all duration-300 group shrink-0"
                   >
                     <div className="space-y-3">
                       <div className="flex justify-between items-center">
-                        <div className="flex text-[#60a5fa] gap-0.5">
+                        <div className="flex text-[#fbbf24] gap-0.5" aria-label={`${review.rating} de 5 estrellas`}>
                           {[...Array(review.rating)].map((_, i) => (
                             <Star key={i} className="w-3 h-3 fill-current" />
                           ))}
                         </div>
                         {review.tag && (
-                          <span className="bg-[#1a263e] text-[#60a5fa] border border-[#1e2e4a] text-[9px] font-bold px-2 py-0.5 rounded-xl uppercase tracking-wider">
+                          <span className="testimonial-tag text-[9px] font-bold px-2 py-0.5 rounded-xl uppercase tracking-wider">
                             {review.tag}
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-[#a1a1aa] leading-relaxed italic font-sans">
+                      <p className="testimonial-copy text-xs leading-relaxed italic font-sans">
                         "{review.text}"
                       </p>
                     </div>
-                    <div className="pt-3 border-t border-[#1e2e4a] flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-xl ${review.avatarBg || 'bg-[#1a263e]'} border border-[#1e2e4a] flex items-center justify-center font-bold text-[#f1f5f9] text-xs`}>
-                        {review.initials}
+                    <div className="testimonial-footer pt-3 border-t flex items-center gap-3">
+                      <div
+                        className="testimonial-avatar"
+                        title={review.modelName}
+                      >
+                        <img
+                          src={review.avatarImage}
+                          alt={`${review.modelName} adquirido por ${review.name}`}
+                          loading="lazy"
+                        />
                       </div>
                       <div>
-                        <h4 className="text-xs font-bold text-[#f1f5f9]">{review.name}</h4>
-                        <span className="text-[10px] text-[#a1a1aa] block font-sans">{review.association}</span>
+                        <h4 className="testimonial-author text-xs font-bold">{review.name}</h4>
+                        <span className="testimonial-association text-[10px] block font-sans">{review.association}</span>
                       </div>
                     </div>
                   </div>
@@ -439,20 +494,52 @@ export default function App() {
         {/* BRANCHES LOCATION */}
         <Branches />
 
+          </>
+        )}
+
       </main>
 
       {/* Premium Minimalist Footer */}
-      <footer className="bg-[#0a1120] text-zinc-400 py-16 text-xs border-t border-[#1e2e4a]">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-12 gap-12">
+      <footer className="site-footer py-16 text-xs border-t">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="footer-cta mb-14 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-7">
+            <div className="max-w-2xl">
+              <span className="footer-cta-kicker">Potencia para tu siguiente paso</span>
+              <h3>¿Listo para poner tu negocio en marcha?</h3>
+              <p>
+                Recibe asesoría sobre modelos, crédito y disponibilidad en nuestras sedes de Lima Norte y Callao.
+              </p>
+            </div>
+            <div className="footer-cta-actions flex flex-col sm:flex-row gap-3 shrink-0">
+              <button
+                type="button"
+                onClick={() => scrollToSection("booking-section")}
+                className="footer-cta-primary"
+              >
+                Agendar una visita
+              </button>
+              <a
+                href={CONTACT.whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="footer-cta-secondary"
+              >
+                Cotizar por WhatsApp
+              </a>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
           
           {/* Brand block */}
           <div className="md:col-span-5 space-y-4">
             <div className="flex items-center gap-3 flex-wrap">
-              <Logo className="w-8 h-8 shrink-0 text-white" />
-              <span className="font-display font-bold text-sm text-white uppercase tracking-wider">
-                EPSA Motor Bajaj
-              </span>
-              <span className="hidden sm:inline-block h-6 w-px bg-[#1e2e4a]" aria-hidden="true" />
+              <Logo
+                className="footer-brand-logo w-[230px] h-[60px] shrink-0"
+                loading="lazy"
+                variant="inverse"
+              />
+              <span className="hidden sm:inline-block h-8 w-px bg-[#31577e]" aria-hidden="true" />
               <img
                 src="/assets/media/images/RE_torito.png"
                 alt="Torito Bajaj"
@@ -464,14 +551,14 @@ export default function App() {
                 className="h-7 w-auto object-contain opacity-90"
               />
             </div>
-            <p className="text-zinc-400 pr-6 leading-relaxed text-[11px]">
+            <p className="footer-copy pr-6 leading-relaxed text-[11px]">
               Distribuidor oficial autorizado de motocars Torito Bajaj.{" "}
-              Con <strong className="text-zinc-200 font-medium">{CONTACT.yearsInMarketLabel}</strong>{" "}
+              Con <strong>{CONTACT.yearsInMarketLabel}</strong>{" "}
               ofreciendo venta y financiamiento en Lima Norte y el Callao.
             </p>
-            <div className="text-[10px] text-zinc-500 space-y-1">
+            <div className="footer-legal text-[10px] space-y-1">
               <p>
-                <span className="text-zinc-400 font-semibold">RUC:</span> {CONTACT.ruc}
+                <span className="font-semibold">RUC:</span> {CONTACT.ruc}
               </p>
               <p>© {new Date().getFullYear()} EPSA Motor. Todos los derechos reservados.</p>
               <p>Autorizado oficial por Crosland Perú S.A.C.</p>
@@ -480,45 +567,50 @@ export default function App() {
 
           {/* Quick links block */}
           <div className="md:col-span-3 space-y-3">
-            <h4 className="text-xs font-bold text-white uppercase tracking-wider">Navegación</h4>
+            <h4 className="footer-heading text-xs font-bold uppercase tracking-wider">Navegación</h4>
             <ul className="space-y-2 text-[11px]">
               <li>
-                <button onClick={() => scrollToSection("hero-section")} className="hover:text-[#60a5fa] cursor-pointer transition-colors text-left">
+                <button onClick={() => scrollToSection("hero-section")} className="footer-nav-link">
                   Inicio
                 </button>
               </li>
               <li>
-                <button onClick={() => scrollToSection("benefits-section")} className="hover:text-[#60a5fa] cursor-pointer transition-colors text-left">
+                <button onClick={() => scrollToSection("benefits-section")} className="footer-nav-link">
                   Beneficios y Crédito
                 </button>
               </li>
               <li>
-                <button onClick={() => scrollToSection("about-section")} className="hover:text-[#60a5fa] cursor-pointer transition-colors text-left">
+                <button onClick={() => scrollToSection("about-section")} className="footer-nav-link">
                   Quiénes somos
                 </button>
               </li>
               <li>
-                <button onClick={() => scrollToSection("catalog-section")} className="hover:text-[#60a5fa] cursor-pointer transition-colors text-left">
+                <button onClick={() => scrollToSection("finder-section")} className="footer-nav-link">
+                  Encuentra tu Torito ideal
+                </button>
+              </li>
+              <li>
+                <button onClick={() => scrollToSection("catalog-section")} className="footer-nav-link">
                   Catálogo de Modelos
                 </button>
               </li>
               <li>
-                <button onClick={() => scrollToSection("comparer-section")} className="hover:text-[#60a5fa] cursor-pointer transition-colors text-left">
+                <button onClick={() => scrollToSection("comparer-section")} className="footer-nav-link">
                   Comparador Técnico
                 </button>
               </li>
               <li>
-                <button onClick={() => scrollToSection("calculator-section")} className="hover:text-[#60a5fa] cursor-pointer transition-colors text-left">
+                <button onClick={() => scrollToSection("calculator-section")} className="footer-nav-link">
                   Calculadora de Ganancia
                 </button>
               </li>
               <li>
-                <button onClick={() => scrollToSection("booking-section")} className="hover:text-[#60a5fa] cursor-pointer transition-colors text-left">
+                <button onClick={() => scrollToSection("booking-section")} className="footer-nav-link">
                   Agendar Visita
                 </button>
               </li>
               <li>
-                <button onClick={() => scrollToSection("branches-section")} className="hover:text-[#60a5fa] cursor-pointer transition-colors text-left">
+                <button onClick={() => scrollToSection("branches-section")} className="footer-nav-link">
                   Sedes y Sucursales
                 </button>
               </li>
@@ -526,243 +618,37 @@ export default function App() {
           </div>
 
           {/* Sede contact details block */}
-          <div className="md:col-span-4 space-y-3 text-[11px] leading-relaxed text-zinc-400">
-            <h4 className="text-xs font-bold text-white uppercase tracking-wider">Sedes Oficiales</h4>
+          <div className="footer-contact md:col-span-4 space-y-3 text-[11px] leading-relaxed">
+            <h4 className="footer-heading text-xs font-bold uppercase tracking-wider">Sedes Oficiales</h4>
             <div className="space-y-3">
               {BRANCHES.map((b) => (
                 <p key={b.name}>
-                  <strong className="text-white">{b.name}:</strong> {b.address}
+                  <strong>{b.name}:</strong> {b.address}
                 </p>
               ))}
               <p className="pt-1">
-                <strong className="text-white">Tel / WhatsApp:</strong> {CONTACT.phoneDisplay}
+                <strong>Tel / WhatsApp:</strong>{" "}
+                <a className="footer-contact-link" href={`tel:${CONTACT.phoneTel}`}>
+                  {CONTACT.phoneDisplay}
+                </a>
                 <br />
-                <strong className="text-white">Email:</strong> {CONTACT.email}
+                <strong>Email:</strong>{" "}
+                <a className="footer-contact-link break-all" href={`mailto:${CONTACT.email}`}>
+                  {CONTACT.email}
+                </a>
                 <br />
-                <strong className="text-white">RUC:</strong> {CONTACT.ruc}
+                <strong>RUC:</strong> {CONTACT.ruc}
                 <br />
-                <strong className="text-white">+20 años</strong> en el mercado
+                <strong>+20 años</strong> en el mercado
               </p>
             </div>
           </div>
 
+          </div>
         </div>
       </footer>
 
-      {/* Floating ChatAdvisor & WhatsApp Launcher Widgets with Premium Spring Motion */}
-      <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3">
-        <AnimatePresence>
-          {/* Helper prompt banner */}
-          {!isChatOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: 15, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 15, scale: 0.95 }}
-              transition={{ type: "spring", stiffness: 260, damping: 20 }}
-              className="bg-[#131c2e] border border-[#1e2e4a] text-[#e2e8f0] px-3.5 py-2 rounded-xl text-[11px] font-bold shadow-lg flex items-center gap-2 uppercase tracking-wider"
-            >
-              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
-              ¿Asesoría de Crédito?
-            </motion.div>
-          )}
-        </AnimatePresence>
-        
-        <div className="flex items-center gap-3">
-          {/* Llamada Rápida Direct Call Button with Tooltip */}
-          <div className="relative">
-            <motion.a
-              href={`tel:${CONTACT.phoneTel}`}
-              initial={{ opacity: 0, scale: 0, y: 30 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.15 }}
-              whileHover={{ scale: 1.15, rotate: 6 }}
-              whileTap={{ scale: 0.92 }}
-              onMouseEnter={() => setShowCallTooltip(true)}
-              onMouseLeave={() => setShowCallTooltip(false)}
-              onClick={() => {
-                console.log("[Analytics] Quick Phone Call click event registered. Voice sales intent tracked.", {
-                  timestamp: new Date().toISOString(),
-                  channel: "Phone",
-                  target: "Sales Hotline",
-                  number: CONTACT.phoneTel
-                });
-              }}
-              className="relative bg-[#3b82f6] hover:bg-[#60a5fa] text-white p-4 rounded-full shadow-lg cursor-pointer flex items-center justify-center transition-all border border-sky-400/30 hover:shadow-[0_0_20px_rgba(59,130,246,0.5)]"
-              title="Llamar directamente a ventas"
-              id="btn-call-floating"
-            >
-              <PhoneCall className="w-5 h-5 text-white" />
-              
-              {/* Live Status Indicator */}
-              <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#3b82f6] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-[#38bdf8] border-2 border-[#060a13]"></span>
-              </span>
-            </motion.a>
-
-            {/* Interactive Call Tooltip with Operation Hours */}
-            <AnimatePresence>
-              {showCallTooltip && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.96, y: 8 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.96, y: 8 }}
-                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                  className="absolute bottom-16 right-0 w-64 bg-[#131c2e]/90 backdrop-blur-md border border-[#1e2e4a]/80 p-4 rounded-xl shadow-2xl z-50 pointer-events-none text-left"
-                >
-                  <div className="relative">
-                    <div className="flex items-center gap-1.5 mb-1">
-                      <span className="w-1.5 h-1.5 bg-[#38bdf8] rounded-full animate-pulse" />
-                      <span className="font-bold text-[#3b82f6] text-[10px] uppercase tracking-widest">Llamada Rápida</span>
-                    </div>
-                    <p className="text-[11px] text-[#f1f5f9] font-bold mb-1">
-                      Central: {CONTACT.phoneDisplay}
-                    </p>
-                    <p className="text-[10px] text-[#a1a1aa] font-sans leading-relaxed">
-                      Llama directo para recibir atención inmediata de un asesor de ventas, resolver tus dudas al instante y programar tu compra.
-                    </p>
-                    {/* Small speech bubble arrow */}
-                    <div className="absolute -bottom-[21px] right-5 w-2.5 h-2.5 bg-[#131c2e]/90 backdrop-blur-md border-r border-b border-[#1e2e4a]/80 rotate-45" />
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Chat via WhatsApp Button with Live Status Indicator & Tooltip */}
-          <div className="relative">
-            {/* Sparkles Emitter Particles */}
-            <div className="absolute inset-0 pointer-events-none overflow-visible z-10">
-              <AnimatePresence>
-                {sparkles.map((sparkle) => (
-                  <motion.span
-                    key={sparkle.id}
-                    initial={{ opacity: 0, scale: 0, x: 0, y: 0 }}
-                    animate={{ 
-                      opacity: [0, 1, 1, 0], 
-                      scale: [0, 1.3, 0.9, 0],
-                      x: sparkle.x,
-                      y: sparkle.y,
-                    }}
-                    exit={{ opacity: 0, scale: 0 }}
-                    transition={{ 
-                      duration: 1.4, 
-                      ease: "easeOut" 
-                    }}
-                    className="absolute rounded-full pointer-events-none"
-                    style={{
-                      width: sparkle.size,
-                      height: sparkle.size,
-                      top: "50%",
-                      left: "50%",
-                      backgroundColor: sparkle.color,
-                      boxShadow: `0 0 10px ${sparkle.color}`,
-                    }}
-                  />
-                ))}
-              </AnimatePresence>
-            </div>
-
-            <motion.a
-              href={CONTACT.whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              referrerPolicy="no-referrer"
-              initial={{ opacity: 0, scale: 0, y: 30 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.1 }}
-              whileHover={{ scale: 1.12, rotate: -4 }}
-              whileTap={{ scale: 0.92 }}
-              onMouseEnter={() => {
-                setShowWspTooltip(true);
-                setIsWspHovered(true);
-                if (!hasPlayedWspSound.current) {
-                  playWspChime();
-                  hasPlayedWspSound.current = true;
-                }
-              }}
-              onMouseLeave={() => {
-                setShowWspTooltip(false);
-                setIsWspHovered(false);
-              }}
-              onClick={() => {
-                console.log("[Analytics] WhatsApp click event registered. Sales intent tracked.", {
-                  timestamp: new Date().toISOString(),
-                  channel: "WhatsApp",
-                  target: "Sales Department",
-                  prefilledMessage: "Hola EPSA Motor..."
-                });
-              }}
-              className={`relative bg-[#25d366] hover:bg-[#20ba5a] text-white rounded-full shadow-lg cursor-pointer flex items-center justify-center border border-[#a3f3be]/30 hover:shadow-[0_0_20px_rgba(37,211,102,0.5)] transition-all duration-300 ${isWspHovered ? "pl-5 pr-4 py-4" : "p-4"}`}
-              title="Contactar a ventas por WhatsApp"
-              id="btn-whatsapp-floating"
-            >
-              <motion.span
-                initial={false}
-                animate={{
-                  maxWidth: isWspHovered ? 120 : 0,
-                  opacity: isWspHovered ? 1 : 0,
-                  marginRight: isWspHovered ? 8 : 0,
-                }}
-                transition={{ duration: 0.25, ease: "easeInOut" }}
-                className="overflow-hidden whitespace-nowrap text-xs font-bold font-sans tracking-wide block"
-              >
-                Chat en Vivo
-              </motion.span>
-              <MessageCircle className="w-5 h-5 text-white flex-shrink-0" />
-              
-              {/* Live Online Badge Status Indicator */}
-              <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#25d366] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-[#0df050] border-2 border-[#060a13]"></span>
-              </span>
-            </motion.a>
-
-            {/* Interactive Tooltip with Operation Hours */}
-            <AnimatePresence>
-              {showWspTooltip && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.96, y: 8 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.96, y: 8 }}
-                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                  className="absolute bottom-16 right-0 w-64 bg-[#131c2e]/90 backdrop-blur-md border border-[#1e2e4a]/80 p-4 rounded-xl shadow-2xl z-50 pointer-events-none text-left"
-                >
-                  <div className="relative">
-                    <div className="flex items-center gap-1.5 mb-1">
-                      <span className="w-1.5 h-1.5 bg-[#0df050] rounded-full animate-pulse" />
-                      <span className="font-bold text-[#25d366] text-[10px] uppercase tracking-widest">Ventas Online</span>
-                    </div>
-                    <p className="text-[11px] text-[#f1f5f9] font-bold mb-1">
-                      Lun a Sáb: 8:00 AM - 6:00 PM
-                    </p>
-                    <p className="text-[10px] text-[#a1a1aa] font-sans leading-relaxed">
-                      Escríbenos para cotizar tu mototaxi, consultar planes de financiamiento o programar un test drive.
-                    </p>
-                    {/* Small speech bubble arrow */}
-                    <div className="absolute -bottom-[21px] right-5 w-2.5 h-2.5 bg-[#131c2e]/90 backdrop-blur-md border-r border-b border-[#1e2e4a]/80 rotate-45" />
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Floating ChatAdvisor Launcher Button */}
-          <motion.button
-            initial={{ opacity: 0, scale: 0, y: 30 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.2 }}
-            whileHover={{ scale: 1.08, rotate: 6 }}
-            whileTap={{ scale: 0.94 }}
-            onClick={() => setIsChatOpen(!isChatOpen)}
-            className="bg-[#60a5fa] hover:bg-[#1e3a8a] text-white p-4 rounded-full shadow-lg cursor-pointer flex items-center justify-center transition-all border border-[#60a5fa]/30 hover:shadow-[0_0_20px_rgba(37,99,235,0.5)]"
-            title="Abrir chat de asesoría AI"
-            id="btn-chat-floating"
-          >
-            <MessageSquare className="w-5 h-5 text-white" />
-          </motion.button>
-        </div>
-      </div>
+      <ContactDock isChatOpen={isChatOpen} onOpenChat={() => setIsChatOpen(true)} />
 
       {/* CHAT ADVISOR CORE INTERACTION */}
       <ChatAdvisor

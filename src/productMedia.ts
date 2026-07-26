@@ -1,0 +1,66 @@
+/**
+ * Secuencias fotográficas oficiales usadas para la vista giratoria automática.
+ * Fuente: fichas públicas de producto de Torito Bajaj Perú.
+ */
+export const PRODUCT_SPIN_FRAMES: Record<string, string[]> = {
+  "2t-ug-glp": [
+    "https://torito.pe/wp-content/uploads/2025/04/7-4.png",
+    "https://torito.pe/wp-content/uploads/2025/04/6-3.png",
+    "https://torito.pe/wp-content/uploads/2025/04/5-3.png",
+    "https://torito.pe/wp-content/uploads/2025/04/4-4.png",
+    "https://torito.pe/wp-content/uploads/2025/04/3-3.png",
+    "https://torito.pe/wp-content/uploads/2025/04/2-4.png",
+    "https://torito.pe/wp-content/uploads/2025/04/1-4.png",
+    "https://torito.pe/wp-content/uploads/2025/04/8-4.png",
+  ],
+  "2t-ug-gsl": [
+    "https://torito.pe/wp-content/uploads/2025/04/7-1.png",
+    "https://torito.pe/wp-content/uploads/2025/04/6-1.png",
+    "https://torito.pe/wp-content/uploads/2025/04/5.png",
+    "https://torito.pe/wp-content/uploads/2025/04/4-1.png",
+    "https://torito.pe/wp-content/uploads/2025/04/3-1.png",
+    "https://torito.pe/wp-content/uploads/2025/04/2-1.png",
+    "https://torito.pe/wp-content/uploads/2025/04/1-1.png",
+    "https://torito.pe/wp-content/uploads/2025/04/8-1.png",
+  ],
+  "torito-250": [
+    "https://torito.pe/wp-content/uploads/2025/06/8866.png",
+    "https://torito.pe/wp-content/uploads/2025/06/8869.png",
+    "https://torito.pe/wp-content/uploads/2025/06/8872.png",
+    "https://torito.pe/wp-content/uploads/2025/06/8875.png",
+    "https://torito.pe/wp-content/uploads/2025/06/8878.png",
+    "https://torito.pe/wp-content/uploads/2025/06/8854.png",
+    "https://torito.pe/wp-content/uploads/2025/06/8858.png",
+    "https://torito.pe/wp-content/uploads/2025/06/8859.png",
+  ],
+  "crom-plus-gnv": [
+    "https://torito.pe/wp-content/uploads/2025/04/8.png",
+    "https://torito.pe/wp-content/uploads/2025/04/7.png",
+    "https://torito.pe/wp-content/uploads/2025/04/6.png",
+    "https://torito.pe/wp-content/uploads/2025/04/4.png",
+    "https://torito.pe/wp-content/uploads/2025/04/3.png",
+    "https://torito.pe/wp-content/uploads/2025/04/2.png",
+    "https://torito.pe/wp-content/uploads/2025/04/1.png",
+    "https://torito.pe/wp-content/uploads/2025/04/9.png",
+  ],
+  "crom-plus-glp": [
+    "https://torito.pe/wp-content/uploads/2025/04/646c02f5bcb15589337055.png",
+    "https://torito.pe/wp-content/uploads/2025/04/4-3.png",
+    "https://torito.pe/wp-content/uploads/2025/04/5-2.png",
+    "https://torito.pe/wp-content/uploads/2025/04/6-2.png",
+    "https://torito.pe/wp-content/uploads/2025/04/7-3.png",
+    "https://torito.pe/wp-content/uploads/2025/04/8-3.png",
+    "https://torito.pe/wp-content/uploads/2025/04/1-3.png",
+    "https://torito.pe/wp-content/uploads/2025/04/2-3.png",
+  ],
+  "maxima-glp": [
+    "https://torito.pe/wp-content/uploads/2025/03/3-1.png",
+    "https://torito.pe/wp-content/uploads/2025/03/4-1.png",
+    "https://torito.pe/wp-content/uploads/2025/03/5-1.png",
+    "https://torito.pe/wp-content/uploads/2025/03/6-1.png",
+    "https://torito.pe/wp-content/uploads/2025/03/7-1.png",
+    "https://torito.pe/wp-content/uploads/2025/03/8-1.png",
+    "https://torito.pe/wp-content/uploads/2025/03/1-1.png",
+    "https://torito.pe/wp-content/uploads/2025/03/2-1.png",
+  ],
+};

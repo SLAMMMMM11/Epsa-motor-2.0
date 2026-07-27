@@ -56,11 +56,16 @@ async function crearLead(req: Request): Promise<Response> {
   }
 
   const lead = payload as LeadPayload;
+  // Los nombres de columna siguen el esquema que ya existía en Supabase:
+  // nombre_completo en vez de nombre, y fecha_registro (default now()) en
+  // vez de created_at.
   const { error } = await db.from(TABLA).insert({
     id: lead.id,
     tipo: lead.tipo,
-    nombre: lead.nombre.trim(),
+    nombre_completo: lead.nombre.trim(),
     telefono: lead.telefono.trim(),
+    origen: "web",
+    estado: "nuevo",
     modelo: lead.modelo?.trim() || null,
     comentario: lead.comentario?.trim() || null,
     distrito: lead.distrito?.trim() || null,
@@ -91,7 +96,7 @@ async function listarLeads(req: Request): Promise<Response> {
   let consulta = db
     .from(TABLA)
     .select("*")
-    .order("created_at", { ascending: false })
+    .order("fecha_registro", { ascending: false })
     .limit(LIMITE_LISTADO);
 
   const tipo = params.get("tipo");

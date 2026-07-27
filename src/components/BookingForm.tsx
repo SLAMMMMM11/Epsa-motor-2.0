@@ -2,6 +2,8 @@ import { FormEvent, useEffect, useState } from "react";
 import { ArrowRight, CalendarDays, Check, CheckCircle2, Clock3, PhoneCall } from "lucide-react";
 import { motion } from "motion/react";
 import { BRANCHES, CONTACT, MOTOTAXI_MODELS } from "../data";
+import { enviarLead, nuevoLeadId } from "../lib/leads";
+import { referenciaCorta } from "../../shared/leads";
 
 interface BookingFormProps {
   preselectedModel?: string;
@@ -45,7 +47,6 @@ export default function BookingForm({ preselectedModel, onClearPreselectedModel 
   const [branch, setBranch] = useState("Puente Piedra");
   const [serviceType, setServiceType] = useState("Prueba de Manejo");
   const [modelInterest, setModelInterest] = useState("");
-  const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
   const [createdBooking, setCreatedBooking] = useState<BookingConfirmation | null>(null);
@@ -58,7 +59,7 @@ export default function BookingForm({ preselectedModel, onClearPreselectedModel 
     }
   }, [preselectedModel]);
 
-  const handleSubmit = async (event: FormEvent) => {
+  const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
 
     if (!name.trim() || !phone.trim() || !date || !time || !branch || !serviceType) {
@@ -66,44 +67,32 @@ export default function BookingForm({ preselectedModel, onClearPreselectedModel 
       return;
     }
 
-    setLoading(true);
     setError("");
 
-    try {
-      const response = await fetch("/api/bookings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: name.trim(),
-          phone,
-          email: "",
-          date,
-          time,
-          branch,
-          serviceType,
-          modelInterest: modelInterest || "General",
-          notes: "",
-        }),
-      });
-      const data = await response.json();
+    const id = nuevoLeadId();
 
-      if (!response.ok) {
-        throw new Error(data.error || "Ocurrió un error al registrar tu visita.");
-      }
+    // Sin await antes de esto: el navegador solo permite abrir la pestaña de
+    // WhatsApp dentro del gesto del clic. El registro va en paralelo.
+    enviarLead({
+      id,
+      tipo: "cita",
+      nombre: name.trim(),
+      telefono: phone,
+      sede: branch,
+      fecha: date,
+      hora: time,
+      motivo: serviceType,
+      modelo: modelInterest || undefined,
+    });
 
-      setCreatedBooking(data.booking);
-      setSuccess(true);
-      setName("");
-      setPhone("");
-      setDate("");
-      setTime("");
-      setModelInterest("");
-      onClearPreselectedModel?.();
-    } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "No pudimos conectar con el servidor.");
-    } finally {
-      setLoading(false);
-    }
+    setCreatedBooking({ id, name: name.trim(), phone, date, time, branch, serviceType });
+    setSuccess(true);
+    setName("");
+    setPhone("");
+    setDate("");
+    setTime("");
+    setModelInterest("");
+    onClearPreselectedModel?.();
   };
 
   return (
@@ -150,7 +139,7 @@ export default function BookingForm({ preselectedModel, onClearPreselectedModel 
                 <span className="booking-success__icon">
                   <CheckCircle2 aria-hidden="true" />
                 </span>
-                <small>Reserva registrada</small>
+                <small>Cita enviada</small>
                 <h3>¡Te esperamos, {createdBooking.name}!</h3>
                 <p>
                   {createdBooking.serviceType} · Sede {createdBooking.branch}
@@ -166,11 +155,12 @@ export default function BookingForm({ preselectedModel, onClearPreselectedModel 
                   </div>
                   <div>
                     <dt>Código</dt>
-                    <dd>{createdBooking.id}</dd>
+                    <dd>{referenciaCorta(createdBooking.id)}</dd>
                   </div>
                 </dl>
                 <p className="booking-success__note">
-                  Un asesor confirmará la visita al {createdBooking.phone}.
+                  Abrimos WhatsApp con los datos de tu cita. Envía el mensaje y un asesor te la
+                  confirmará al {createdBooking.phone}.
                 </p>
                 <button type="button" className="btn-primary" onClick={() => setSuccess(false)}>
                   Agendar otra visita
@@ -292,11 +282,13 @@ export default function BookingForm({ preselectedModel, onClearPreselectedModel 
                   </label>
                 </div>
 
-                <button type="submit" disabled={loading} className="booking-submit btn-primary">
-                  {loading ? "Agendando..." : "Agendar visita"}
+                <button type="submit" className="booking-submit btn-primary">
+                  Agendar por WhatsApp
                   <ArrowRight aria-hidden="true" />
                 </button>
-                <p className="booking-form-note">Un asesor te llamará para confirmar.</p>
+                <p className="booking-form-note">
+                  Se abrirá WhatsApp con tu cita ya redactada. Un asesor la confirma.
+                </p>
               </form>
             )}
           </div>

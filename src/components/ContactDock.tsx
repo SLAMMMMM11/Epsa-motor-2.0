@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { CheckCircle2, ChevronDown, MessageSquare, PhoneCall, ShieldCheck, X } from "lucide-react";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { CONTACT, MOTOTAXI_MODELS } from "../data";
+import { enviarLead, nuevoLeadId } from "../lib/leads";
 
 function WhatsAppIcon({ className = "" }: { className?: string }) {
   return (
@@ -161,24 +162,18 @@ export default function ContactDock({ isChatOpen, onOpenChat }: ContactDockProps
       return;
     }
 
-    const message = [
-      "*Cotización — EPSA Motor*",
-      "",
-      `Nombre: ${quoteForm.name.trim()}`,
-      `Celular: +51 ${formatPhone(quoteForm.phone)}`,
-      `Modelo de interés: ${quoteForm.model || "Necesito recomendación"}`,
-      `Forma de compra: ${quoteForm.purchaseType}`,
-      `Distrito: ${quoteForm.district}`,
-      `Comentario: ${quoteForm.notes.trim() || "Sin comentarios adicionales"}`,
-    ].join("\n");
-
-    const ownerPhone = CONTACT.phoneTel.replace(/\D/g, "");
-    const whatsappUrl = `https://wa.me/${ownerPhone}?text=${encodeURIComponent(message)}`;
-    const whatsappWindow = window.open(whatsappUrl, "_blank", "noopener,noreferrer");
-
-    if (!whatsappWindow) {
-      window.location.href = whatsappUrl;
-    }
+    // Abre WhatsApp y registra el lead en paralelo. No usar await antes de
+    // esto: rompería el gesto del usuario y el navegador bloquearía la pestaña.
+    const whatsappUrl = enviarLead({
+      id: nuevoLeadId(),
+      tipo: "cotizacion",
+      nombre: quoteForm.name.trim(),
+      telefono: quoteForm.phone,
+      modelo: quoteForm.model,
+      forma_compra: quoteForm.purchaseType,
+      distrito: quoteForm.district,
+      comentario: quoteForm.notes.trim(),
+    });
 
     // Confirmación visible: si el navegador bloquea la pestaña, el enlace sigue a la mano.
     setSentUrl(whatsappUrl);

@@ -30,10 +30,13 @@ const cardVariants = {
 
 interface CatalogProps {
   onSelectModelForBooking: (modelName: string) => void;
+  /** Cotizar abre la hoja de WhatsApp; el trámite de crédito sigue yendo al
+      formulario de visitas, que es otro flujo. */
+  onQuoteModel: (modelName: string) => void;
   onViewProduct: (modelId: string) => void;
 }
 
-export default function Catalog({ onSelectModelForBooking, onViewProduct }: CatalogProps) {
+export default function Catalog({ onSelectModelForBooking, onQuoteModel, onViewProduct }: CatalogProps) {
   const [selectedFuel, setSelectedFuel] = useState<string>("Todos");
   const [activeModel, setActiveModel] = useState<MototaxiModel | null>(null);
   const [downPayment, setDownPayment] = useState<number>(3000);
@@ -169,7 +172,8 @@ export default function Catalog({ onSelectModelForBooking, onViewProduct }: Cata
                     src={model.imageUrl}
                     alt={model.name}
                     className="w-full h-full object-contain p-3 bg-[#1a263e] group-hover:scale-105 transition-transform duration-500"
-                  />
+                    decoding="async"
+                    loading="lazy" />
 
                   <div className="absolute bottom-3 left-3 z-20">
                     <span className="text-[10px] text-[#f1f5f9] font-bold uppercase bg-[#131c2e] border border-[#1e2e4a] px-2 py-0.5 rounded-xl tracking-wider shadow-sm">
@@ -251,8 +255,8 @@ export default function Catalog({ onSelectModelForBooking, onViewProduct }: Cata
                         Simular cuota
                       </button>
                       <button
-                        onClick={() => onSelectModelForBooking(model.name)}
-                        className="btn-primary text-white font-bold py-2 px-3 rounded-xl text-[10px] uppercase tracking-wider text-center cursor-pointer hover:scale-102 transition-transform duration-300"
+                        onClick={() => onQuoteModel(model.name)}
+                        className="btn-accent text-white font-bold py-2 px-3 rounded-xl text-[10px] uppercase tracking-wider text-center cursor-pointer hover:scale-102 transition-transform duration-300"
                       >
                         Cotizar
                       </button>
@@ -316,7 +320,8 @@ export default function Catalog({ onSelectModelForBooking, onViewProduct }: Cata
                           src={activeModel.imageUrl}
                           alt={activeModel.name}
                           className="w-full h-40 object-contain p-3 bg-[#1a263e]"
-                        />
+                          decoding="async"
+                          loading="lazy" />
                       </div>
                       <div className="bg-[#060a13] border border-[#1e2e4a] rounded-xl p-4 space-y-2 text-xs">
                         <div className="flex justify-between border-b border-[#1e2e4a]/40 pb-1.5">

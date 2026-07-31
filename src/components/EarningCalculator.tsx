@@ -74,7 +74,10 @@ export default function EarningCalculator() {
               <img
                 src="/assets/media/images/calculator/ganancia-diaria.webp"
                 alt="Conductor trabajando durante su jornada diaria con un mototaxi"
-              />
+                width={1600}
+                height={800}
+                decoding="async"
+                loading="lazy" />
               <figcaption>
                 <small>Tu jornada</small>
                 <strong>{dailyRides} carreras al día</strong>
@@ -142,7 +145,7 @@ export default function EarningCalculator() {
                         onClick={() => setFuelType(option.value)}
                       >
                         <span className="earnings-fuel__image">
-                          <img src={option.image} alt={option.alt} />
+                          <img src={option.image} alt={option.alt} decoding="async" loading="lazy" />
                           {isActive && (
                             <span className="earnings-fuel__check">
                               <Check aria-hidden="true" />
@@ -166,7 +169,10 @@ export default function EarningCalculator() {
               <img
                 src="/assets/media/images/calculator/ahorro-gnv.webp"
                 alt="Conductor revisando la ganancia obtenida con su mototaxi"
-              />
+                width={1600}
+                height={878}
+                decoding="async"
+                loading="lazy" />
               <div className="earnings-result__shade" />
               <figcaption>
                 <small>Ganancia neta estimada</small>

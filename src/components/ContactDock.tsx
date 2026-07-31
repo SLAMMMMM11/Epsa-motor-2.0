@@ -3,19 +3,7 @@ import { CheckCircle2, ChevronDown, MessageSquare, PhoneCall, ShieldCheck, X } f
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { CONTACT, MOTOTAXI_MODELS } from "../data";
 import { enviarLead, nuevoLeadId } from "../lib/leads";
-
-function WhatsAppIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-    >
-      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.966-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.198-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.521.149-.173.198-.297.298-.495.099-.198.05-.372-.025-.521-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.262.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.981.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.894 9.894-9.894 2.642 0 5.125 1.03 6.993 2.899a9.825 9.825 0 0 1 2.9 6.993c-.002 5.45-4.436 9.893-9.893 9.893m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.14 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.336 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z" />
-    </svg>
-  );
-}
+import WhatsAppIcon from "./WhatsAppIcon";
 
 const LIMA_DISTRICTS = [
   "Ancón",
@@ -90,12 +78,25 @@ interface QuoteErrors {
 }
 
 interface ContactDockProps {
+  /** La apertura vive en App: el CTA del hero también abre esta hoja. */
+  isQuoteOpen: boolean;
+  onQuoteOpenChange: (open: boolean) => void;
   isChatOpen: boolean;
   onOpenChat: () => void;
+  /** Modelo con el que llega el formulario si se abrió desde el CTA de una
+      unidad concreta (catálogo o ficha de producto). */
+  initialModel?: string;
 }
 
-export default function ContactDock({ isChatOpen, onOpenChat }: ContactDockProps) {
-  const [isOpen, setIsOpen] = useState(false);
+export default function ContactDock({
+  isQuoteOpen,
+  onQuoteOpenChange,
+  isChatOpen,
+  onOpenChat,
+  initialModel,
+}: ContactDockProps) {
+  const isOpen = isQuoteOpen;
+  const setIsOpen = onQuoteOpenChange;
   const sheetRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const [errors, setErrors] = useState<QuoteErrors>({});
@@ -118,6 +119,16 @@ export default function ContactDock({ isChatOpen, onOpenChat }: ContactDockProps
   useEffect(() => {
     if (!isOpen) return;
 
+    // El reset vive aquí y no en openPanel porque la hoja también se abre
+    // desde el hero, y ese camino no pasa por openPanel.
+    setSentUrl(null);
+    setErrors({});
+
+    // Se recuerda quién abrió para devolverle el foco al cerrar. No sirve
+    // apuntar siempre al FAB: en móvil está oculto mientras la hoja está
+    // abierta, y el foco acabaría en <body>.
+    const opener = document.activeElement as HTMLElement | null;
+
     const isMobileSheet = window.matchMedia("(max-width: 639px)").matches;
     const previousOverflow = document.body.style.overflow;
     if (isMobileSheet) document.body.style.overflow = "hidden";
@@ -134,15 +145,19 @@ export default function ContactDock({ isChatOpen, onOpenChat }: ContactDockProps
     return () => {
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", handleKeydown);
-      triggerRef.current?.focus();
+      (opener ?? triggerRef.current)?.focus();
     };
   }, [isOpen]);
 
-  const openPanel = () => {
-    setSentUrl(null);
-    setErrors({});
-    setIsOpen(true);
-  };
+  // Efecto aparte del de arriba a propósito: si viviera allí habría que
+  // meter initialModel en sus dependencias y la hoja volvería a robar el
+  // foco cada vez que cambiara el modelo.
+  useEffect(() => {
+    if (!isOpen || !initialModel) return;
+    setQuoteForm((current) => ({ ...current, model: initialModel }));
+  }, [isOpen, initialModel]);
+
+  const openPanel = () => setIsOpen(true);
 
   const closeAndOpenChat = () => {
     setIsOpen(false);

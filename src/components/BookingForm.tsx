@@ -112,7 +112,10 @@ export default function BookingForm({ preselectedModel, onClearPreselectedModel 
               className="booking-showcase__vehicle"
               src="/assets/media/images/finder-pasajeros.webp"
               alt="Mototaxi Torito circulando con pasajeros"
-            />
+              width={1200}
+              height={675}
+              decoding="async"
+              loading="lazy" />
             <div className="booking-showcase__shade" />
             <div className="booking-showcase__copy">
               <small>Visita EPSA Motor</small>
@@ -124,9 +127,12 @@ export default function BookingForm({ preselectedModel, onClearPreselectedModel 
             </div>
             <img
               className="booking-showcase__advisor"
-              src="/assets/media/images/contacto-chico.png"
+              src="/assets/media/images/contacto-chico.webp"
               alt="Asesor de EPSA Motor"
-            />
+              width={595}
+              height={833}
+              decoding="async"
+              loading="lazy" />
           </aside>
 
           <div className="booking-form-panel finance-form-panel">
@@ -185,7 +191,7 @@ export default function BookingForm({ preselectedModel, onClearPreselectedModel 
                           }}
                         >
                           <span className="booking-reason__image">
-                            <img src={option.image} alt="" />
+                            <img src={option.image} alt="" decoding="async" loading="lazy" />
                             {isActive && (
                               <span className="booking-reason__check">
                                 <Check aria-hidden="true" />

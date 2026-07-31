@@ -1,21 +1,24 @@
-import { useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import Hero from "./components/Hero";
 import Catalog from "./components/Catalog";
 import BookingForm from "./components/BookingForm";
 import Branches from "./components/Branches";
-import ChatAdvisor from "./components/ChatAdvisor";
+import Faq from "./components/Faq";
 import Logo from "./components/Logo";
-import AmbientBackground from "./components/AmbientBackground";
 import ModelComparer from "./components/ModelComparer";
 import EarningCalculator from "./components/EarningCalculator";
 import AboutUs from "./components/AboutUs";
 import ModelFinder from "./components/ModelFinder";
 import ContactDock from "./components/ContactDock";
 import ThemeToggle from "./components/ThemeToggle";
-import ProductPage from "./components/ProductPage";
 import { TESTIMONIALS, CONTACT, BRANCHES, getModelById } from "./data";
 import { motion, AnimatePresence } from "motion/react";
-import { Award, FileText, MapPinned, Menu, MessageSquare, Star, X } from "lucide-react";
+import { Menu, Star, X } from "lucide-react";
+
+// Diferidos: la ficha de producto solo se monta al abrir un modelo y el
+// asesor solo al abrir el chat. Ninguno hace falta en la portada.
+const ProductPage = lazy(() => import("./components/ProductPage"));
+const ChatAdvisor = lazy(() => import("./components/ChatAdvisor"));
 
 const NAV_ITEMS = [
   { label: "Inicio", section: "hero-section" },
@@ -26,45 +29,44 @@ const NAV_ITEMS = [
   { label: "Rentabilidad", section: "calculator-section" },
   { label: "Citas", section: "booking-section" },
   { label: "Sedes", section: "branches-section" },
+  { label: "Preguntas", section: "faq-section" },
 ] as const;
 
-const BENEFIT_CARDS = [
-  {
-    title: "Crédito Directo Flexible",
-    copy: "Evaluamos tu historial crediticio con tu DNI y un recibo de servicios. Diseñamos cuotas a tu medida para facilitar el pago progresivo.",
-    image: "/assets/media/images/benefit-credito-directo-modelo-real.png",
-    alt: "Asesoría para solicitar crédito directo en EPSA Motor",
-    icon: Award,
-  },
-  {
-    title: "Trámite de Placa Sunarp",
-    copy: "Gestionamos el registro de placa y tarjeta de propiedad de manera gratuita y veloz con la compra de tu mototaxi nuevo.",
-    image: "/assets/media/images/benefit-tramite-placa-modelo-real-v2.png",
-    alt: "Placa peruana y documentos para el trámite registral en Sunarp",
-    icon: FileText,
-  },
-  {
-    title: "3 Sedes en Lima y Callao",
-    copy: "Atiéndete en Comas, Ventanilla o Puente Piedra para ver unidades, cotizar y evaluar tu crédito con un asesor.",
-    image: "/assets/media/images/benefit-sedes-lima-callao.webp",
-    alt: "Mapa de Lima y Callao con las sedes de EPSA Motor",
-    icon: MapPinned,
-  },
-  {
-    title: "Asesoría Comercial",
-    copy: "Cotiza por WhatsApp, agenda una prueba de manejo o visita la sede. Te ayudamos a elegir el modelo ideal para tu negocio.",
-    image: "/assets/media/images/benefit-asesoria-whatsapp-modelo-real.png",
-    alt: "Asesora comercial de EPSA Motor atendiendo por WhatsApp",
-    icon: MessageSquare,
-  },
+/** El menú de escritorio muestra solo las secciones clave para no saturarse;
+    el panel móvil sigue ofreciendo la lista completa de arriba. */
+const DESKTOP_NAV_ITEMS = [
+  { label: "Modelos", section: "catalog-section" },
+  { label: "Comparar", section: "comparer-section" },
+  { label: "Rentabilidad", section: "calculator-section" },
+  { label: "Nosotros", section: "about-section" },
+  { label: "Contáctanos", section: "footer-contact" },
 ] as const;
 
 export default function App() {
   const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
+  // Una vez abierto, el asesor se queda montado: desmontarlo cortaría las
+  // animaciones de salida de AnimatePresence.
+  const [chatEverOpened, setChatEverOpened] = useState<boolean>(false);
+
+  const openChat = () => {
+    setChatEverOpened(true);
+    setIsChatOpen(true);
+  };
+  // La apertura del formulario de cotización vive aquí porque la abren dos
+  // sitios: el botón flotante del dock y el CTA principal del hero.
+  const [isQuoteOpen, setIsQuoteOpen] = useState<boolean>(false);
+  // Modelo con el que se abre la hoja de cotización desde el catálogo o la
+  // ficha de producto; vacío cuando se abre desde el dock o el hero.
+  const [quoteModel, setQuoteModel] = useState<string>("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const [selectedModelForBooking, setSelectedModelForBooking] = useState<string>("");
   const [currentPath, setCurrentPath] = useState(() => window.location.pathname);
   const [activeSection, setActiveSection] = useState<string>("hero-section");
+  // Aparte de activeSection (que resalta el ítem del menú): controla solo el
+  // estilo del header. El header se funde con el video únicamente en reposo;
+  // con la página en movimiento necesita fondo opaco para tapar lo que sube
+  // por detrás, o el producto y los botones lo atraviesan.
+  const [isAtPageTop, setIsAtPageTop] = useState<boolean>(true);
 
   const productId = currentPath.match(/^\/modelos\/([^/]+)\/?$/)?.[1];
   const activeProduct = productId ? getModelById(decodeURIComponent(productId)) : null;
@@ -82,6 +84,7 @@ export default function App() {
   useEffect(() => {
     if (currentPath !== "/") {
       setActiveSection("catalog-section");
+      setIsAtPageTop(false);
       return;
     }
 
@@ -104,6 +107,10 @@ export default function App() {
       }
 
       setActiveSection(nextSection);
+
+      // Umbral corto a propósito: en cuanto la página se mueve, el header se
+      // vuelve opaco y oculta el contenido que pasa por debajo.
+      setIsAtPageTop(window.scrollY < 24);
     };
 
     const frame = window.requestAnimationFrame(updateNavigationState);
@@ -121,6 +128,13 @@ export default function App() {
     window.history.pushState({}, "", `/modelos/${modelId}`);
     setCurrentPath(`/modelos/${modelId}`);
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  /** Los CTA de cotización de un modelo abren la hoja de WhatsApp con esa
+      unidad ya elegida, en vez de mandar al formulario de visitas. */
+  const handleQuoteModel = (modelName: string) => {
+    setQuoteModel(modelName);
+    setIsQuoteOpen(true);
   };
 
   const handleSelectModelForBooking = (modelName: string) => {
@@ -164,9 +178,17 @@ export default function App() {
 
   return (
     <div className="app-shell min-h-screen font-sans flex flex-col justify-between selection:bg-[#ed111d]/20 relative">
-      <AmbientBackground />
 
-      <header className="legacy-site-header sticky top-0 z-40 border-b border-[#21466f] bg-[#071e3d] px-4 py-3 backdrop-blur-md sm:px-6">
+      {/* Siempre fixed: alternar sticky/fixed sacaba y metía el header del
+          flujo, la página saltaba su altura al cruzar el umbral y el estado
+          oscilaba. Fuera del flujo siempre, solo cambia la apariencia. */}
+      <header
+        className={`legacy-site-header fixed top-0 left-0 right-0 z-40 px-4 py-3 sm:px-6${
+          isAtPageTop && !activeProduct
+            ? " legacy-site-header--transparent"
+            : " border-b border-[#21466f] bg-[#071e3d] backdrop-blur-md"
+        }`}
+      >
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <button
             type="button"
@@ -176,14 +198,15 @@ export default function App() {
           >
             <Logo className="w-[126px] h-9 sm:w-[148px] sm:h-10" variant="inverse" />
             <span className="legacy-brand-divider hidden sm:block" aria-hidden="true" />
-            <span className="legacy-partner-logos hidden sm:flex">
-              <img src="/assets/media/images/RE_torito.png" alt="Torito Bajaj" />
-              <img src="/assets/media/images/bajaj_favorita.png" alt="Bajaj favorita del Perú" />
+            <span className="legacy-partner-logos">
+              <img src="/assets/media/images/RE_torito.png" alt="Torito Bajaj" width={246} height={130} decoding="async" loading="lazy" />
+              <img src="/assets/media/images/bajaj_favorita.png" alt="Bajaj" width={68} height={74} decoding="async" loading="lazy" />
+              <img src="/assets/media/images/bajaj-favorita-en-100-paises.png" alt="Bajaj, favorita en 100 países" width={73} height={53} decoding="async" loading="lazy" />
             </span>
           </button>
 
           <nav className="legacy-desktop-nav hidden xl:flex" aria-label="Navegación principal">
-            {NAV_ITEMS.map((item) => (
+            {DESKTOP_NAV_ITEMS.map((item) => (
               <button
                 key={item.section}
                 type="button"
@@ -199,11 +222,21 @@ export default function App() {
           <div className="flex shrink-0 items-center gap-2">
             <ThemeToggle />
             <button
-              onClick={() => setIsChatOpen(true)}
-              className="btn-primary hidden rounded-sm px-4 py-2.5 sm:inline-flex"
+              onClick={() => openChat()}
+              className="btn-primary hidden rounded-sm px-4 py-2.5 sm:inline-flex xl:hidden"
               id="btn-nav-chat"
             >
               Asesoría de crédito
+            </button>
+            {/* Releva al de asesoría justo donde ese se oculta (xl): en
+                escritorio la acción del topbar es cotizar. */}
+            <button
+              type="button"
+              onClick={() => handleQuoteModel("")}
+              className="btn-accent hidden rounded-sm px-4 py-2.5 xl:inline-flex"
+              id="btn-nav-quote"
+            >
+              Cotiza tu Torito
             </button>
             <button
               type="button"
@@ -249,7 +282,7 @@ export default function App() {
                   className="mobile-nav-link cursor-pointer sm:hidden"
                   onClick={() => {
                     setIsMobileMenuOpen(false);
-                    setIsChatOpen(true);
+                    openChat();
                   }}
                 >
                   Evaluar mi crédito
@@ -260,90 +293,25 @@ export default function App() {
         </AnimatePresence>
       </header>
 
-      {/* Main Content */}
-      <main className="flex-grow">
+      {/* Main Content: la ficha de producto compensa la altura del header
+          fixed; la portada no, porque su hero va debajo del header a propósito. */}
+      <main className={activeProduct ? "flex-grow pt-[4.6rem]" : "flex-grow"}>
         {activeProduct ? (
-          <ProductPage
-            model={activeProduct}
-            onBack={() => scrollToSection("catalog-section")}
-            onQuote={handleSelectModelForBooking}
-            onViewProduct={handleViewProduct}
-          />
+          <Suspense fallback={<div className="min-h-[60svh]" />}>
+            <ProductPage
+              model={activeProduct}
+              onBack={() => scrollToSection("catalog-section")}
+              onQuote={handleQuoteModel}
+              onViewProduct={handleViewProduct}
+            />
+          </Suspense>
         ) : (
           <>
         
         {/* HERO SECTION */}
-        <Hero
-          onExploreCatalog={() => scrollToSection("catalog-section")}
-          onOpenChat={() => setIsChatOpen(true)}
-        />
+        <Hero onOpenChat={() => openChat()} onOpenQuote={() => setIsQuoteOpen(true)} />
 
-        {/* BENEFITS / WHY CHOOSE EPSA MOTOR */}
-        <section className="brand-light-section py-20 border-b relative" id="benefits-section">
-          <div className="max-w-7xl mx-auto px-6">
-            
-            {/* Elegant Header */}
-            <motion.div
-              initial={{ opacity: 0, y: 25 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
-              className="text-center max-w-2xl mx-auto mb-16"
-            >
-              <span className="brand-kicker text-xs font-bold uppercase tracking-widest block mb-2">Respaldo Integral</span>
-              <h2 className="brand-section-title text-3xl sm:text-4xl font-display font-bold tracking-tight leading-tight">
-                ¿Por qué elegir EPSA Motor?
-              </h2>
-              <p className="brand-section-copy mt-4 text-xs md:text-sm leading-relaxed font-sans">
-                <strong className="font-medium">{CONTACT.yearsInMarketLabel}</strong> acompañando
-                emprendedores en Lima y Callao. Venta y financiamiento de Torito Bajaj con respaldo formal (RUC{" "}
-                {CONTACT.ruc}).
-              </p>
-            </motion.div>
-
-            {/* Grid with stagger reveal */}
-            <motion.div
-              variants={{
-                hidden: { opacity: 0 },
-                visible: {
-                  opacity: 1,
-                  transition: { staggerChildren: 0.12 }
-                }
-              }}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-80px" }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
-            >
-              
-              {BENEFIT_CARDS.map(({ title, copy, image, alt, icon: Icon }) => (
-                <motion.article
-                  key={title}
-                  variants={{
-                    hidden: { opacity: 0, y: 30 },
-                    visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 16 } }
-                  }}
-                  className="brand-benefit-card group"
-                >
-                  <div className="brand-benefit-media brand-benefit-media--photo">
-                    <img src={image} alt={alt} loading="lazy" />
-                    <div className="brand-benefit-icon">
-                      <Icon aria-hidden="true" />
-                    </div>
-                  </div>
-                  <div className="brand-benefit-body">
-                    <h3 className="brand-card-title">{title}</h3>
-                    <p className="brand-card-copy">{copy}</p>
-                  </div>
-                </motion.article>
-              ))}
-
-            </motion.div>
-
-          </div>
-        </section>
-
-        {/* QUIÉNES SOMOS — fotos oficiales */}
+        {/* QUIÉNES SOMOS + RESPALDO — una sola sección de confianza */}
         <AboutUs />
 
         {/* SELECTOR GUIADO DE MODELO */}
@@ -355,6 +323,7 @@ export default function App() {
         {/* ONLINE CATALOG */}
         <Catalog
           onSelectModelForBooking={handleSelectModelForBooking}
+          onQuoteModel={handleQuoteModel}
           onViewProduct={handleViewProduct}
         />
 
@@ -423,7 +392,7 @@ export default function App() {
                           src={review.avatarImage}
                           alt={`${review.modelName} adquirido por ${review.name}`}
                           loading="lazy"
-                        />
+                          decoding="async" />
                       </div>
                       <div>
                         <h4 className="testimonial-author text-xs font-bold">{review.name}</h4>
@@ -470,7 +439,7 @@ export default function App() {
                           src={review.avatarImage}
                           alt={`${review.modelName} adquirido por ${review.name}`}
                           loading="lazy"
-                        />
+                          decoding="async" />
                       </div>
                       <div>
                         <h4 className="testimonial-author text-xs font-bold">{review.name}</h4>
@@ -493,6 +462,9 @@ export default function App() {
 
         {/* BRANCHES LOCATION */}
         <Branches />
+
+        {/* PREGUNTAS FRECUENTES */}
+        <Faq onOpenQuote={() => setIsQuoteOpen(true)} />
 
           </>
         )}
@@ -544,12 +516,18 @@ export default function App() {
                 src="/assets/media/images/RE_torito.png"
                 alt="Torito Bajaj"
                 className="h-7 w-auto object-contain opacity-90"
-              />
+                width={246}
+                height={130}
+                decoding="async"
+                loading="lazy" />
               <img
                 src="/assets/media/images/bajaj_favorita.png"
                 alt="Bajaj favorita del Perú"
                 className="h-7 w-auto object-contain opacity-90"
-              />
+                width={176}
+                height={74}
+                decoding="async"
+                loading="lazy" />
             </div>
             <p className="footer-copy pr-6 leading-relaxed text-[11px]">
               Distribuidor oficial autorizado de motocars Torito Bajaj.{" "}
@@ -572,11 +550,6 @@ export default function App() {
               <li>
                 <button onClick={() => scrollToSection("hero-section")} className="footer-nav-link">
                   Inicio
-                </button>
-              </li>
-              <li>
-                <button onClick={() => scrollToSection("benefits-section")} className="footer-nav-link">
-                  Beneficios y Crédito
                 </button>
               </li>
               <li>
@@ -618,7 +591,7 @@ export default function App() {
           </div>
 
           {/* Sede contact details block */}
-          <div className="footer-contact md:col-span-4 space-y-3 text-[11px] leading-relaxed">
+          <div className="footer-contact md:col-span-4 space-y-3 text-[11px] leading-relaxed" id="footer-contact">
             <h4 className="footer-heading text-xs font-bold uppercase tracking-wider">Sedes Oficiales</h4>
             <div className="space-y-3">
               {BRANCHES.map((b) => (
@@ -648,14 +621,24 @@ export default function App() {
         </div>
       </footer>
 
-      <ContactDock isChatOpen={isChatOpen} onOpenChat={() => setIsChatOpen(true)} />
+      <ContactDock
+        isQuoteOpen={isQuoteOpen}
+        onQuoteOpenChange={setIsQuoteOpen}
+        isChatOpen={isChatOpen}
+        onOpenChat={() => openChat()}
+        initialModel={quoteModel}
+      />
 
       {/* CHAT ADVISOR CORE INTERACTION */}
-      <ChatAdvisor
-        isOpen={isChatOpen}
-        onClose={() => setIsChatOpen(false)}
-        onSelectModelForBooking={handleSelectModelForBooking}
-      />
+      {chatEverOpened && (
+        <Suspense fallback={null}>
+          <ChatAdvisor
+            isOpen={isChatOpen}
+            onClose={() => setIsChatOpen(false)}
+            onSelectModelForBooking={handleSelectModelForBooking}
+          />
+        </Suspense>
+      )}
 
     </div>
   );

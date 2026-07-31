@@ -94,7 +94,7 @@ export default function ModelComparer({ onSelectModel }: ModelComparerProps) {
 
               <div className="model-choice-visual">
                 <span className="model-choice-visual__letter">A</span>
-                <img key={modelA.id} src={modelA.imageUrl} alt={modelA.name} />
+                <img key={modelA.id} src={modelA.imageUrl} alt={modelA.name} decoding="async" loading="lazy" />
                 <div className="model-choice-visual__meta">
                   <span>{modelA.category === "carga" ? "Carga y pasajeros" : "Pasajeros"}</span>
                   <strong>{modelA.name}</strong>
@@ -133,7 +133,7 @@ export default function ModelComparer({ onSelectModel }: ModelComparerProps) {
 
               <div className="model-choice-visual">
                 <span className="model-choice-visual__letter">B</span>
-                <img key={modelB.id} src={modelB.imageUrl} alt={modelB.name} />
+                <img key={modelB.id} src={modelB.imageUrl} alt={modelB.name} decoding="async" loading="lazy" />
                 <div className="model-choice-visual__meta">
                   <span>{modelB.category === "carga" ? "Carga y pasajeros" : "Pasajeros"}</span>
                   <strong>{modelB.name}</strong>

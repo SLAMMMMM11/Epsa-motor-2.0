@@ -80,7 +80,7 @@ export default function Branches() {
                   src={branch.imageUrl}
                   alt={`Fachada referencial de la sede EPSA Motor ${branch.name}`}
                   loading="lazy"
-                />
+                  decoding="async" />
               </div>
 
               <div className="branch-card-body">

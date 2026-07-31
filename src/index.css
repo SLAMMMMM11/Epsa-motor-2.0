@@ -1,12 +1,11 @@
-/* Barlow / Barlow Condensed: mismas tipografías del demo demo-venta-motos */
-@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600;1,700&family=Barlow:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+/* Las fuentes se cargan desde index.html con preconnect, no con @import:
+   un @import aquí bloquea el render encadenando peticiones en serie. */
 @import "tailwindcss";
 
 @theme {
   --font-sans: "Inter", "Barlow", system-ui, sans-serif;
   /* Títulos como en demo-venta-motos.netlify.app */
   --font-display: "Barlow Condensed", "Barlow", system-ui, sans-serif;
-  --font-serif: "Playfair Display", Georgia, serif;
 
   --color-brand-primary: #0b3b82;
   --color-brand-accent: #ed111d;
@@ -70,6 +69,9 @@
 
 html {
   scroll-behavior: smooth;
+  /* El header es fixed y siempre visible: sin esto, scrollIntoView deja el
+     título de cada sección escondido debajo de él. */
+  scroll-padding-top: 4.75rem;
 }
 
 body {
@@ -108,6 +110,29 @@ h1, h2, h3, h4, h5, h6,
   box-shadow: 0 8px 24px -10px rgb(7 30 61 / 0.8);
 }
 
+/* Rojo de marca para los CTA de cotización, que son la acción comercial
+   principal. #d40f1a y no #ed111d por la misma razón que en el hero: blanco
+   sobre el rojo puro mide 4,47:1 y no llega al 4,5:1 que pide AA en texto
+   pequeño; este da 5,41:1 y es indistinguible a simple vista. */
+.btn-accent {
+  background-color: #d40f1a;
+  color: #ffffff;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  border: 1px solid #d40f1a;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 6px 18px -8px rgb(212 15 26 / 0.65);
+}
+
+.btn-accent:hover {
+  background-color: #ed111d;
+  color: #ffffff;
+  border-color: #ed111d;
+  box-shadow: 0 8px 24px -10px rgb(212 15 26 / 0.8);
+}
+
 .btn-secondary {
   background-color: var(--epsa-surface);
   color: var(--epsa-text);
@@ -125,31 +150,274 @@ h1, h2, h3, h4, h5, h6,
   background-color: var(--epsa-surface);
 }
 
-.hero-credit-button {
-  border: 1px solid rgb(255 255 255 / 0.72);
-  background: #ffffff;
-  color: #071e3d;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  box-shadow: 0 8px 24px -16px rgb(0 0 0 / 0.8);
-  transition: background-color 180ms ease, color 180ms ease, transform 180ms ease;
-}
-
-.hero-credit-button:hover {
-  background: #ed111d;
-  border-color: #ed111d;
-  color: #ffffff;
-  transform: translateY(-1px);
-}
-
-.hero-credit-button:hover svg {
-  color: #ffffff;
-}
-
+/* El header flota fijo y transparente sobre esta sección (ver
+   .legacy-site-header--transparent), así que ya no resta su propia altura:
+   el hero ocupa el viewport completo y el header queda superpuesto. */
 .hero-home-section {
-  min-height: calc(100svh - 4.5rem);
+  min-height: 100svh;
+}
+
+@media (max-width: 1023px) {
+  .hero-home-section {
+    min-height: 65svh;
+  }
+}
+
+/* Logo arriba y unidad debajo, centrados sobre el video.
+   El z-index los pone por encima de la capa del video, que va en 0. */
+.hero-stage {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  min-height: inherit;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.5rem, 2vw, 1.5rem);
+  /* Arriba suma la altura del header fixed (~4.6rem): sin ella, el centrado
+     ignora esa franja tapada y el titular queda pegado al menú. */
+  padding: calc(4.6rem + clamp(1.5rem, 4vh, 3rem)) 1.5rem clamp(2.5rem, 6vh, 4rem);
+}
+
+/* Envoltorios de agrupación: en móvil son columnas centradas apiladas en
+   el orden natural de lectura (título, producto, CTA). En escritorio ancho
+   (ver el media query de abajo) el producto queda siempre al centro —
+   sobre el punto donde convergen las luces del video— y el texto y los
+   botones se reparten a los costados, en el espacio que si no quedaría
+   vacío. */
+.hero-stage__copy,
+.hero-stage__media {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(0.5rem, 2vw, 1.5rem);
+}
+
+@media (min-width: 1280px) {
+  .hero-stage {
+    display: grid;
+    /* Piso de 16rem: sin él, las columnas laterales se aplastan a lo que
+       sobre después del ancho fijo del producto y el titular vuelve a
+       quebrarse en tres líneas en el extremo angosto de este rango. */
+    grid-template-columns: minmax(16rem, 1fr) auto minmax(16rem, 1fr);
+    grid-template-areas: "copy media actions";
+    align-items: center;
+    column-gap: clamp(1.5rem, 4vw, 4rem);
+    padding-inline: clamp(2rem, 5vw, 5rem);
+  }
+
+  .hero-stage__copy {
+    grid-area: copy;
+    align-items: flex-start;
+  }
+
+  .hero-stage__media {
+    grid-area: media;
+  }
+}
+
+.hero-stage__logo {
+  /* Posicionado y con z-index explícitos: sin ellos, un elemento estático
+     queda por debajo de cualquier hermano posicionado (el halo), sin
+     importar el orden en el DOM, y el halo lo taparía. */
+  position: relative;
+  z-index: 1;
+  width: clamp(14rem, 32vw, 22rem);
+  height: auto;
+  /* Sombra difusa en lugar de una caja: despega el logo del video y ayuda a
+     que sus zonas oscuras no se pierdan sobre fotogramas oscuros. */
+  filter: drop-shadow(0 4px 20px rgb(3 12 26 / 0.8));
+}
+
+/* Escritorio ancho: el logo sigue arriba del producto y centrado, igual
+   que en el resto de anchos (lo hereda de .hero-stage__media: columna en
+   flex con align-items:center), solo que más grande — un vehículo mucho
+   más grande con el mismo logo de siempre se ve desproporcionado. Superponerlo
+   sobre el techo se probó y quedaba mal calculado según el ángulo de la
+   foto del vehículo; arriba y centrado es más simple y no depende de eso. */
+@media (min-width: 1280px) {
+  .hero-stage__logo {
+    width: clamp(16rem, min(24vw, 36vh), 28rem);
+  }
+}
+
+/* Frase corta y en mayúsculas: compite en el mismo registro visual que la
+   competencia, donde el titular es lo primero que se lee. */
+.hero-stage__headline {
+  max-width: 20ch;
+  font-size: clamp(2.75rem, 8vw, 5rem);
+  font-weight: 800;
+  line-height: 0.96;
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+  text-wrap: balance;
+  text-align: center;
+  color: #ffffff;
+  text-shadow: 0 2px 24px rgb(3 12 26 / 0.6);
+}
+
+.hero-stage__headline em {
+  font-style: normal;
+  color: #ed111d;
+}
+
+/* #cbd5e1 y no un gris más apagado: sobre un fotograma claro del video, los
+   grises por debajo de este valor no llegan al 4,5:1 que pide AA. */
+.hero-stage__lead {
+  max-width: 48ch;
+  font-size: clamp(1.125rem, 2.5vw, 1.5rem);
+  line-height: 1.55;
+  text-align: center;
+  color: #cbd5e1;
+  text-shadow: 0 1px 12px rgb(3 12 26 / 0.7);
+}
+
+/* Escritorio ancho: texto a la izquierda, más compacto que el producto —
+   este último es la pieza dominante del hero, como en la competencia, así
+   que el titular ya no compite en tamaño con él. Va después de las reglas
+   base de headline/lead: con la misma especificidad, si fuera antes la
+   cascada se lo comería la regla base al declararse más tarde. */
+@media (min-width: 1280px) {
+  .hero-stage__headline,
+  .hero-stage__lead {
+    text-align: left;
+  }
+
+  .hero-stage__headline {
+    font-size: clamp(2.75rem, 3.4vw, 4.5rem);
+  }
+
+  .hero-stage__lead {
+    max-width: 30ch;
+    font-size: clamp(1.125rem, 1.1vw, 1.375rem);
+  }
+}
+
+.hero-stage__unit-wrap {
+  position: relative;
+  z-index: 1;
+  animation: hero-float 4.5s ease-in-out 2.2s infinite;
+}
+
+.hero-stage__unit {
+  position: relative;
+  z-index: 1;
+  width: clamp(21rem, 62vw, 46rem);
+  height: auto;
+  /* La sombra sigue el recorte del vehículo, no un rectángulo. */
+  filter: drop-shadow(0 30px 40px rgb(3 12 26 / 0.6));
+}
+
+/* Halo de fondo: ancla la unidad al centro de la composición en vez de
+   dejarla flotando sobre el vacío del video. Vive en .hero-stage__media
+   (no en el wrap) para no heredar el flotado y así no "respirar" con él. */
+.hero-stage__media {
+  position: relative;
+}
+
+.hero-stage__glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 0;
+  width: min(52rem, 90%);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  background:
+    radial-gradient(circle, rgb(237 17 29 / 0.16), transparent 62%),
+    radial-gradient(circle at 60% 60%, rgb(11 59 130 / 0.28), transparent 68%);
+  filter: blur(8px);
+  pointer-events: none;
+}
+
+/* Sombra de piso bajo las ruedas: separa la unidad del halo circular y le
+   da un punto de apoyo, en vez de dejarla suspendida sobre el degradado. */
+.hero-stage__ground {
+  position: absolute;
+  bottom: 4%;
+  left: 50%;
+  z-index: 0;
+  width: 62%;
+  height: 12%;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse, rgb(2 8 18 / 0.55), transparent 72%);
+  filter: blur(2px);
+  pointer-events: none;
+}
+
+/* El producto es la pieza dominante del hero, como en la referencia de la
+   competencia: crece bastante más que en el apilado centrado de móvil y
+   tablet. El límite por vh evita que se desborde en monitores anchos pero
+   de poca altura. Ojo: a partir de acá el layout es un grid de una sola
+   fila (título, producto y CTA en paralelo, no apilados) — el alto que
+   importa para el desborde es el de la columna más alta (normalmente el
+   producto), no la suma de las tres. Antes esto tenía tramos adicionales
+   para achicar aún más en laptops de 14" a 150% de escala, calculados
+   para el apilado vertical; con el grid ya no hacían falta y solo
+   dejaban el producto más chico de lo necesario — se midió en el propio
+   navegador antes de quitarlos, no a ojo. */
+@media (min-width: 1280px) {
+  .hero-stage__unit {
+    width: clamp(26rem, min(42vw, 72vh), 58rem);
+  }
+}
+
+/* Piso de emergencia solo para alturas verdaderamente extremas (bajo unos
+   ~570px, donde el producto y el logo ya tocan su propio piso de arriba y
+   no pueden achicarse más por sí solos): baja ambos pisos un poco para
+   que siga habiendo margen de maniobra. No debería activarse en laptops
+   normales, ni siquiera a 150% de escala con el navegador maximizado. */
+@media (min-width: 1280px) and (max-height: 560px) {
+  .hero-stage__unit {
+    width: clamp(20rem, min(42vw, 60vh), 58rem);
+  }
+
+  .hero-stage__logo {
+    width: clamp(12rem, min(24vw, 30vh), 28rem);
+  }
+}
+
+@keyframes hero-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-stage__unit-wrap {
+    animation: none;
+  }
+}
+
+.hero-stage__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+@media (max-width: 479px) {
+  .hero-stage__actions {
+    width: 100%;
+    flex-direction: column;
+  }
+}
+
+/* Costado derecho, en espejo con .hero-stage__copy: apilados y pegados al
+   margen, en vez de en fila centrada. Va después de la regla base (misma
+   especificidad): si fuera antes, la cascada se lo comería al declararse
+   esta más tarde en el archivo. */
+@media (min-width: 1280px) {
+  .hero-stage__actions {
+    grid-area: actions;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: flex-end;
+  }
 }
 
 .hero-home-section > .max-w-7xl {
@@ -169,363 +437,385 @@ h1, h2, h3, h4, h5, h6,
   }
 }
 
-.hero-credential-row {
+/* Oscurecimiento del hero.
+   Una sola capa determinista en lugar de apilar la opacidad del video con un
+   degradado: así el contraste del texto se puede calcular. Pesa a la izquierda
+   en escritorio, que es donde vive la copia, y es uniforme en móvil, que va a
+   una columna. Cuando el video no se reproduce, esto hace de fondo. */
+.hero-scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(to right, rgb(4 16 33 / 0.78) 0%, rgb(4 16 33 / 0.6) 42%, rgb(4 16 33 / 0.38) 100%),
+    linear-gradient(to bottom, rgb(4 16 33 / 0.4), rgb(4 16 33 / 0.22) 45%, rgb(4 16 33 / 0.65)),
+    radial-gradient(60rem 40rem at 72% 38%, rgb(237 17 29 / 0.1), transparent 62%);
+}
+
+@media (max-width: 1023px) {
+  .hero-scrim {
+    background:
+      linear-gradient(to bottom, rgb(4 16 33 / 0.72), rgb(4 16 33 / 0.55) 45%, rgb(4 16 33 / 0.78)),
+      radial-gradient(30rem 24rem at 50% 30%, rgb(237 17 29 / 0.1), transparent 62%);
+  }
+}
+
+/* Etiqueta de credencial. Sustituye a la caja blanca, que dominaba el hero. */
+.hero-eyebrow-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.34rem 0.8rem 0.34rem 0.45rem;
+  border: 1px solid rgb(255 255 255 / 0.18);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.07);
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.14);
+  color: rgb(255 255 255 / 0.92);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.hero-eyebrow-pill img {
+  height: 0.95rem;
+  width: auto;
+  object-fit: contain;
+}
+
+/* El desenfoque sobre un video en reproducción cuesta un pase por frame.
+   En pantallas táctiles se cambia por un fondo plano equivalente. */
+@media (hover: none) {
+  .hero-eyebrow-pill {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgb(255 255 255 / 0.12);
+  }
+}
+
+/* Marca de producto sobre el titular. Más contenida que cuando hacía de
+   encabezado: ahora acompaña al H1 en vez de sustituirlo. */
+.hero-wordmark {
+  display: block;
+  width: clamp(11rem, 26vw, 16rem);
+  height: auto;
+  /* Separa el logo del video sin recurrir a una caja: la sombra difusa
+     mantiene legible el trazo claro sobre fotogramas claros. */
+  filter: drop-shadow(0 4px 18px rgb(3 12 26 / 0.75));
+}
+
+@media (max-width: 1023px) {
+  .hero-wordmark {
+    margin-inline: auto;
+  }
+}
+
+.hero-headline {
+  font-size: clamp(2rem, 4.6vw, 3.1rem);
+  font-weight: 700;
+  line-height: 1.06;
+  /* Explícito: si no, chocan el tracking de Tailwind y el letter-spacing de
+     .font-display y queda un valor que nadie eligió. */
+  letter-spacing: -0.005em;
+  text-wrap: balance;
+  color: #ffffff;
+  text-shadow: 0 2px 24px rgb(3 12 26 / 0.55);
+  margin-bottom: 0.25rem;
+}
+
+.hero-headline em {
+  font-style: normal;
+  color: #ed111d;
+}
+
+/* Unidad destacada: sustituye al panel de pestañas en la columna derecha. */
+.hero-unit {
+  position: relative;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.hero-unit img {
+  width: 100%;
+  max-width: 34rem;
+  height: auto;
+  /* La sombra sigue el recorte del vehículo, no una caja rectangular. */
+  filter: drop-shadow(0 26px 34px rgb(3 12 26 / 0.55));
+}
+
+.hero-unit__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.85rem;
+  border: 1px solid rgb(255 255 255 / 0.16);
+  border-radius: 999px;
+  background: rgb(4 16 33 / 0.6);
+  color: rgb(255 255 255 / 0.9);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.hero-unit__tag svg {
+  width: 0.85rem;
+  height: 0.85rem;
+  color: #34d399;
+}
+
+.hero-cta-primary,
+.hero-cta-whatsapp,
+.hero-cta-ghost {
+  display: inline-flex;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  padding: 0 1.6rem;
+  border-radius: 0.3rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background-color 180ms cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 180ms cubic-bezier(0.4, 0, 0.2, 1),
+    transform 180ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Acción principal del negocio: la evaluación de crédito.
+   #d40f1a y no #ed111d porque blanco sobre el rojo de marca mide 4,47:1 y
+   falla AA por poco en texto pequeño; este da 5,41:1 y es indistinguible. */
+.hero-cta-primary {
+  border: 1px solid #d40f1a;
+  background: #d40f1a;
+  color: #ffffff;
+  box-shadow: 0 10px 26px -12px rgb(212 15 26 / 0.7);
+}
+
+.hero-cta-primary:hover {
+  border-color: #ed111d;
+  background: #ed111d;
+  transform: translateY(-1px);
+}
+
+/* Secundario en contorno verde: identifica el canal sin competir en peso
+   visual con el botón principal. Verde #25d366 sobre el navy del hero mide
+   8,39:1, muy por encima de lo exigido. */
+.hero-cta-whatsapp {
+  border: 1px solid #25d366;
+  background: rgb(37 211 102 / 0.1);
+  color: #25d366;
+}
+
+.hero-cta-whatsapp:hover {
+  background: rgb(37 211 102 / 0.2);
+  transform: translateY(-1px);
+}
+
+.hero-cta-primary svg,
+.hero-cta-whatsapp svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.hero-cta-ghost {
+  border: 1px solid rgb(255 255 255 / 0.38);
+  background: rgb(255 255 255 / 0.04);
+  color: #ffffff;
+}
+
+.hero-cta-ghost:hover {
+  border-color: rgb(255 255 255 / 0.6);
+  background: rgb(255 255 255 / 0.1);
+}
+
+.hero-cta-primary:focus-visible,
+.hero-cta-whatsapp:focus-visible,
+.hero-cta-ghost:focus-visible {
+  outline: 3px solid rgb(255 255 255 / 0.55);
+  outline-offset: 3px;
+}
+
+.hero-model-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+/* Borde al 14% y no al 10%: sobre este scrim, el 10% mide ~1,3:1 y la tarjeta
+   no llegaría a leerse como tal. */
+.hero-model-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid rgb(255 255 255 / 0.14);
+  border-left: 2px solid #ed111d;
+  border-radius: 0.5rem;
+  background: rgb(4 16 33 / 0.55);
+  text-align: left;
+}
+
+.hero-model-card strong {
+  font-family: "Barlow Condensed", "Barlow", sans-serif;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+
+.hero-model-card small {
+  font-family: ui-monospace, "SFMono-Regular", monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+
+.hero-credentials {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 0.8rem;
-}
-
-.hero-authorized-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.65rem;
-  padding: 0.55rem 0.8rem;
-  border: 1px solid rgb(255 255 255 / 0.82);
-  border-radius: 0.2rem;
-  background: #ffffff;
-  color: #0b3b82;
-  box-shadow: 0 10px 26px -18px rgb(0 0 0 / 0.85);
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.075em;
-  text-transform: uppercase;
-}
-
-.hero-anniversary-badge {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  min-height: 3.25rem;
-  padding: 0.35rem 0.8rem 0.35rem 0.42rem;
-  border: 1px solid #f1c36c;
-  border-radius: 999px 0.45rem 0.45rem 999px;
-  background:
-    linear-gradient(135deg, rgb(255 255 255 / 0.12), transparent 48%),
-    #071e3d;
-  color: #ffffff;
-  box-shadow:
-    0 14px 30px -20px rgb(0 0 0 / 0.9),
-    inset 0 1px 0 rgb(255 255 255 / 0.12);
-}
-
-.hero-anniversary-badge::after {
-  content: "";
-  position: absolute;
-  right: -0.18rem;
-  bottom: 0.35rem;
-  width: 0.28rem;
-  height: 70%;
-  background: #ed111d;
-  transform: skewY(-18deg);
-}
-
-.hero-anniversary-badge__seal {
-  position: relative;
-  display: grid;
-  width: 2.55rem;
-  height: 2.55rem;
-  place-items: center;
-  border: 1px solid #f5d28b;
-  border-radius: 50%;
-  background: linear-gradient(145deg, #f1c36c, #b8781e);
-  color: #071e3d;
-  box-shadow: inset 0 0 0 3px rgb(7 30 61 / 0.12);
-}
-
-.hero-anniversary-badge__seal svg {
-  position: absolute;
-  width: 1.8rem;
-  height: 1.8rem;
-  opacity: 0.28;
-}
-
-.hero-anniversary-badge__seal strong {
-  position: relative;
-  z-index: 1;
-  font-family: "Barlow Condensed", "Barlow", sans-serif;
-  font-size: 1.45rem;
-  font-weight: 800;
-  line-height: 1;
-}
-
-.hero-anniversary-badge__copy strong,
-.hero-anniversary-badge__copy small {
-  display: block;
-  white-space: nowrap;
-}
-
-.hero-anniversary-badge__copy strong {
-  color: #f5d28b;
-  font-family: "Barlow Condensed", "Barlow", sans-serif;
-  font-size: 1.05rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  line-height: 1;
-  text-transform: uppercase;
-}
-
-.hero-anniversary-badge__copy small {
-  margin-top: 0.18rem;
-  color: #c6d2e2;
-  font-size: 0.54rem;
-  font-weight: 700;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
+  gap: 1.25rem 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgb(255 255 255 / 0.15);
 }
 
 @media (min-width: 1024px) {
-  .hero-credential-row {
+  .hero-credentials {
     justify-content: flex-start;
   }
 }
 
-@media (max-width: 480px) {
-  .hero-authorized-badge {
-    width: 100%;
-    justify-content: center;
-    font-size: 0.6rem;
-  }
-}
-
-/* Hero tabs: identical footprint for showroom, DTS-i and financing. */
-.hero-feature-panel {
-  display: flex;
-  min-height: 35rem;
-  flex-direction: column;
-}
-
-.hero-feature-tabs {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin-bottom: 1rem;
-  border-bottom: 1px solid #21466f;
-}
-
-.hero-feature-tab {
-  position: relative;
-  min-width: 0;
-  min-height: 3rem;
-  padding: 0 0.3rem;
-  border-bottom: 2px solid transparent;
-  color: #9ca3af;
-  font-size: 0.64rem;
-  font-weight: 800;
-  letter-spacing: 0.055em;
-  line-height: 1.15;
-  text-transform: uppercase;
-  transition: border-color 180ms ease, color 180ms ease, background-color 180ms ease;
-}
-
-.hero-feature-tab:hover {
-  color: #f4f4f5;
-  background: rgb(255 255 255 / 0.025);
-}
-
-.hero-feature-tab.is-active {
-  border-color: #ed111d;
-  color: #ffffff;
-}
-
-.hero-feature-tab.is-active::after {
-  position: absolute;
-  right: 0;
-  bottom: -2px;
-  left: 0;
-  height: 2px;
-  background: #ffffff;
-  content: "";
-  transform-origin: left center;
-  animation: hero-tab-progress 9s linear both;
-}
-
-@keyframes hero-tab-progress {
-  from {
-    transform: scaleX(0);
-  }
-
-  to {
-    transform: scaleX(1);
-  }
-}
-
-.hero-tab-stage {
-  display: grid;
-  min-height: 24.5rem;
-  flex: 1;
-}
-
-.hero-tab-stage > * {
-  grid-area: 1 / 1;
-}
-
-.hero-tab-content {
-  display: grid;
-  min-height: 24.5rem;
-  grid-template-rows: auto minmax(6.9rem, 1fr) 2.75rem;
-  gap: 0.85rem;
-}
-
-.hero-tab-media {
-  position: relative;
-  overflow: hidden;
-  aspect-ratio: 16 / 9;
-  border: 1px solid #21466f;
-  border-radius: 0.25rem;
-  background: #02060c;
-}
-
-.hero-tab-media > video,
-.hero-tab-media > img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.hero-tab-media--product {
-  background:
-    radial-gradient(circle at 62% 62%, rgb(62 121 197 / 0.28), transparent 36%),
-    linear-gradient(135deg, #06172e, #0b3b82 72%, #071e3d);
-}
-
-.hero-tab-media--product::after {
-  position: absolute;
-  right: 11%;
-  bottom: 10%;
-  width: 52%;
-  height: 8%;
-  border-radius: 999px;
-  background: rgb(0 0 0 / 0.28);
-  content: "";
-  filter: blur(10px);
-}
-
-.hero-tab-media--product > img {
-  position: relative;
-  z-index: 1;
-  padding: 0.45rem 0.65rem 0.15rem;
-  object-fit: contain;
-  filter: drop-shadow(0 15px 12px rgb(0 0 0 / 0.32));
-}
-
-.hero-tab-media--product .hero-tab-media__badge {
-  z-index: 2;
-}
-
-.hero-tab-media__badge {
-  position: absolute;
-  top: 0.7rem;
-  left: 0.7rem;
+/* Sello de trayectoria: una moneda acuñada, sin icono compitiendo con el
+   número y sin rotación (era lo único torcido tras quitar la diagonal roja). */
+.hero-anniversary {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.36rem 0.55rem;
-  border: 1px solid rgb(255 255 255 / 0.3);
-  border-radius: 0.25rem;
-  background: rgb(7 30 61 / 0.88);
-  color: #ffffff;
-  font-size: 0.58rem;
+  gap: 0.7rem;
+}
+
+.hero-anniversary__coin {
+  position: relative;
+  display: grid;
+  width: 3.4rem;
+  height: 3.4rem;
+  place-items: center;
+  border-radius: 50%;
+  /* Cónico y no lineal: imita el giro especular del metal. */
+  background: conic-gradient(from 210deg, #f7e3b0, #c9922f 25%, #f4d999 48%, #a9711c 70%, #f7e3b0);
+  box-shadow:
+    inset 0 0 0 1px rgb(7 30 61 / 0.35),
+    inset 0 0 0 4px rgb(255 255 255 / 0.22),
+    0 10px 24px -14px rgb(201 146 47 / 0.65);
+}
+
+/* Canto estriado: el detalle que la hace leer como moneda y no como círculo. */
+.hero-anniversary__coin::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg, rgb(7 30 61 / 0.28) 0 2deg, transparent 2deg 6deg);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
+}
+
+.hero-anniversary__coin i {
+  position: relative;
+  z-index: 1;
+  font-family: "Barlow Condensed", "Barlow", sans-serif;
+  font-size: 1.6rem;
+  font-style: normal;
   font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  backdrop-filter: blur(6px);
+  line-height: 1;
+  color: #071e3d;
+  text-shadow: 0 1px 0 rgb(255 255 255 / 0.45);
 }
 
-.hero-tab-media__badge svg {
-  width: 0.78rem;
-  height: 0.78rem;
-  color: #fca5a5;
+.hero-anniversary__rule {
+  width: 1px;
+  height: 2rem;
+  background: linear-gradient(to bottom, transparent, rgb(255 255 255 / 0.28), transparent);
 }
 
-.hero-tab-copy {
-  min-height: 6.9rem;
-  text-align: left;
+/* Columna flex explícita: el span era inline y su línea base descolocaba el
+   bloque de texto respecto al centro de la moneda. */
+.hero-anniversary__copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.22rem;
 }
 
-.hero-tab-copy > span {
-  color: #aebdce;
-  font-size: 0.61rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.hero-tab-copy h3 {
-  margin-top: 0.15rem;
-  color: #ffffff;
+/* Blanco y no dorado: el oro se reserva para la moneda. */
+.hero-anniversary__copy strong {
   font-family: "Barlow Condensed", "Barlow", sans-serif;
   font-size: 1.15rem;
   font-weight: 800;
-  line-height: 1.05;
+  letter-spacing: 0.16em;
+  line-height: 1;
   text-transform: uppercase;
-}
-
-.hero-tab-copy p {
-  min-height: 2.1rem;
-  margin-top: 0.3rem;
-  color: #aebdce;
-  font-size: 0.68rem;
-  line-height: 1.45;
-}
-
-.hero-tab-copy > div {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  margin-top: 0.55rem;
-}
-
-.hero-tab-copy small {
-  padding: 0.28rem 0.48rem;
-  border: 1px solid #21466f;
-  border-radius: 999px;
-  background: rgb(7 30 61 / 0.7);
-  color: #dce5f2;
-  font-size: 0.56rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.hero-tab-cta {
-  display: inline-flex;
-  width: 100%;
-  min-height: 2.75rem;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid #0b3b82;
-  border-radius: 0.25rem;
-  background: #0b3b82;
   color: #ffffff;
-  font-size: 0.64rem;
-  font-weight: 800;
-  letter-spacing: 0.07em;
+}
+
+.hero-anniversary__copy small {
+  font-size: 0.58rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  transition: background-color 180ms ease, border-color 180ms ease;
+  color: rgb(255 255 255 / 0.62);
 }
 
-.hero-tab-cta:hover {
-  border-color: #124f9f;
-  background: #124f9f;
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem 1.5rem;
+  flex: 1;
+  min-width: 15rem;
+  text-align: center;
 }
 
-@media (max-width: 420px) {
-  .hero-feature-panel {
-    min-height: 33rem;
+@media (min-width: 1024px) {
+  .hero-stats {
+    text-align: left;
   }
+}
 
-  .hero-feature-tab {
-    min-height: 2.8rem;
-    font-size: 0.56rem;
-    letter-spacing: 0.025em;
-  }
+.hero-stats__value {
+  font-family: ui-monospace, "SFMono-Regular", monospace;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ffffff;
+}
 
-  .hero-tab-stage,
-  .hero-tab-content {
-    min-height: 22.75rem;
-  }
+.hero-stats__link {
+  text-decoration: none;
+  transition: color 180ms ease;
+}
+
+.hero-stats__link:hover {
+  color: #5ce68f;
+}
+
+.hero-stats__label {
+  margin-top: 0.1rem;
+  font-size: 0.625rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #cbd5e1;
 }
 
 /* Refined interactive card shadows */
@@ -957,6 +1247,20 @@ h1, h2, h3, h4, h5, h6,
 
 .legacy-site-header {
   box-shadow: 0 14px 34px -28px rgb(0 0 0 / 0.9);
+  transition: background-color 320ms ease, border-color 320ms ease, box-shadow 320ms ease, backdrop-filter 320ms ease;
+}
+
+/* Sobre el hero, el header se funde con el video: sin fondo ni borde propios,
+   solo un degradado leve que sostiene el contraste del logo y el menú.
+   Solo apariencia: el posicionamiento (fixed) es permanente y vive en el
+   elemento, porque alternar fixed/sticky desplazaba el layout la altura del
+   header al cruzar el umbral y hacía oscilar el estado. */
+.legacy-site-header--transparent {
+  border-bottom: 1px solid transparent;
+  background: linear-gradient(to bottom, rgb(4 16 33 / 0.55), transparent);
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .legacy-brand-lockup {
@@ -977,7 +1281,7 @@ h1, h2, h3, h4, h5, h6,
 }
 
 .legacy-partner-logos {
-  display: none;
+  display: flex;
   align-items: center;
   gap: 0.65rem;
 }
@@ -989,6 +1293,22 @@ h1, h2, h3, h4, h5, h6,
   opacity: 0.92;
 }
 
+/* En móvil también se muestran, pero más chicos y juntos: a tamaño completo
+   los tres logos más el de EPSA no entran junto al menú y el interruptor
+   de tema en una pantalla de 360-390px. */
+@media (max-width: 639px) {
+  .legacy-partner-logos {
+    gap: 0.3rem;
+  }
+
+  /* Escalado con el ancho y no a un tamaño fijo: a 1,1rem los tres logos más
+     el de EPSA, el interruptor de tema y el menú desbordaban la fila en
+     pantallas de 360px. */
+  .legacy-partner-logos img {
+    height: clamp(0.9rem, 3.2vw, 1.35rem);
+  }
+}
+
 .legacy-desktop-nav {
   display: none;
   min-width: 0;
@@ -997,11 +1317,6 @@ h1, h2, h3, h4, h5, h6,
   gap: clamp(0.8rem, 1.35vw, 1.55rem);
 }
 
-@media (min-width: 640px) {
-  .legacy-partner-logos {
-    display: flex;
-  }
-}
 
 @media (min-width: 1280px) {
   .legacy-desktop-nav {
@@ -1776,9 +2091,11 @@ h1, h2, h3, h4, h5, h6,
   object-fit: contain;
 }
 
+/* Dos columnas y no tres: la sección quedó en 4 tarjetas tras fusionarla con
+   los beneficios, y en 3 columnas la cuarta quedaba huérfana en su fila. */
 .trust-point-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1.15rem;
   margin-top: clamp(1.75rem, 4vw, 2.75rem);
   padding-top: clamp(1.75rem, 4vw, 2.75rem);
@@ -1802,9 +2119,12 @@ h1, h2, h3, h4, h5, h6,
   transform: translateY(-3px);
 }
 
+/* aspect-ratio además del min-height: reserva el hueco antes de que cargue la
+   imagen y evita el salto de layout. */
 .trust-point-media {
   position: relative;
   min-height: 12rem;
+  aspect-ratio: 3 / 2;
   overflow: hidden;
   background: var(--epsa-surface-soft);
 }
@@ -3876,6 +4196,163 @@ h1, h2, h3, h4, h5, h6,
 }
 
 /* ============================================================
+   Preguntas frecuentes
+   ============================================================ */
+.faq-section {
+  background: var(--epsa-section-soft);
+  color: var(--epsa-text);
+  border-bottom: 1px solid var(--epsa-border);
+}
+
+.faq-eyebrow {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--epsa-highlight);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.faq-title {
+  font-size: clamp(1.875rem, 4.5vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+}
+
+.faq-intro {
+  margin-top: 0.75rem;
+  color: var(--epsa-muted);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+.faq-list {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.faq-item {
+  border: 1px solid var(--epsa-border);
+  border-radius: 0.75rem;
+  background: var(--epsa-surface);
+  transition: border-color 180ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.faq-item:hover {
+  border-color: var(--epsa-highlight);
+}
+
+.faq-item[open] {
+  border-color: var(--epsa-highlight);
+}
+
+.faq-item summary {
+  display: flex;
+  min-height: 3.25rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1.1rem;
+  cursor: pointer;
+  color: var(--epsa-text);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.4;
+  /* Quita el triángulo por defecto: se usa un chevron propio. */
+  list-style: none;
+}
+
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-item summary:focus-visible {
+  outline: 2px solid var(--epsa-highlight);
+  outline-offset: -2px;
+  border-radius: 0.75rem;
+}
+
+.faq-item summary svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  flex: 0 0 auto;
+  color: var(--epsa-muted);
+  transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.faq-item[open] summary svg {
+  transform: rotate(180deg);
+}
+
+.faq-item > p {
+  margin: 0;
+  padding: 0 1.1rem 1.1rem;
+  color: var(--epsa-text-soft);
+  font-size: 0.9375rem;
+  line-height: 1.65;
+}
+
+.faq-footer {
+  margin-top: 2.5rem;
+  text-align: center;
+}
+
+.faq-footer > p {
+  margin: 0 0 0.9rem;
+  color: var(--epsa-muted);
+  font-size: 0.9375rem;
+}
+
+/* Mismo verde y misma tinta oscura que el CTA del hero: el canal se reconoce
+   por el color antes que por el texto. */
+.faq-footer__cta {
+  display: inline-flex;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  padding: 0 1.6rem;
+  border-radius: 0.3rem;
+  background: #25d366;
+  color: #071e3d;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 180ms cubic-bezier(0.4, 0, 0.2, 1), transform 180ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.faq-footer__cta:hover {
+  background: #3ee07a;
+  transform: translateY(-1px);
+}
+
+.faq-footer__cta svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.faq-footer small {
+  display: block;
+  margin-top: 0.9rem;
+  color: var(--epsa-muted);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.faq-footer small a {
+  color: var(--epsa-highlight);
+  font-weight: 600;
+}
+
+.faq-footer small a:hover {
+  text-decoration: underline;
+}
+
+/* ============================================================
    Dock de cotización por WhatsApp
    Escala de espaciado de 4px, radios y estados coherentes.
    ============================================================ */
@@ -3899,8 +4376,10 @@ h1, h2, h3, h4, h5, h6,
   --dock-danger: #ff8a8f;
 
   position: fixed;
-  right: var(--dock-4);
-  bottom: max(var(--dock-4), env(safe-area-inset-bottom));
+  /* 20px a cada lado: con 16px el botón quedaba a medio caballo sobre la
+     franja azul del pie. El safe-area suma el notch en iOS sin restar margen. */
+  right: var(--dock-5);
+  bottom: calc(var(--dock-5) + env(safe-area-inset-bottom, 0px));
   z-index: 50;
   display: flex;
   flex-direction: column;
@@ -5888,12 +6367,6 @@ h1, h2, h3, h4, h5, h6,
     width: min(86rem, 100%);
   }
 
-  .hero-feature-panel {
-    width: 100%;
-    max-width: 38rem;
-    margin-left: auto;
-  }
-
   .catalog-card-media {
     height: 14rem;
   }
@@ -5921,10 +6394,6 @@ h1, h2, h3, h4, h5, h6,
   .earnings-shell,
   .model-comparison-shell {
     width: min(98rem, 100%);
-  }
-
-  .hero-feature-panel {
-    max-width: 40rem;
   }
 
   .catalog-grid {

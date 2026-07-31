@@ -1,5 +1,6 @@
 import { CONTACT } from "../data";
 import { mensajeWhatsApp, type LeadPayload } from "../../shared/leads";
+import { registrarEventoLead } from "./analytics";
 
 /**
  * Abre WhatsApp con el mensaje ya redactado y registra el lead en paralelo.
@@ -19,6 +20,9 @@ export function enviarLead(lead: LeadPayload): string {
 
   const ventana = window.open(url, "_blank", "noopener,noreferrer");
   if (!ventana) window.location.href = url;
+
+  // La métrica que importa no son las visitas, sino cuántas acaban escribiendo.
+  registrarEventoLead(lead.tipo, lead.modelo);
 
   void fetch("/api/leads", {
     method: "POST",

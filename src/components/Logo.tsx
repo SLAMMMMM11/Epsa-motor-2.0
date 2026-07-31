@@ -13,13 +13,14 @@ export default function Logo({
   return (
     <span className={`${className} epsa-logo-wrap epsa-logo-wrap--${variant} inline-grid`}>
       <img
-        src="/assets/media/images/epsa-motor-logo-transparente.png"
+        src="/assets/media/images/epsa-motor-logo-transparente.webp"
         alt="EPSA Motor, distribuidor autorizado Bajaj"
         className="epsa-logo epsa-logo--standard h-full w-full object-contain object-center"
         loading={loading}
         decoding="async"
         draggable={false}
-      />
+        width={1193}
+        height={382} />
       <img
         src="/assets/media/images/epsa-motor-logo-claro.png"
         alt=""
@@ -28,7 +29,8 @@ export default function Logo({
         loading={loading}
         decoding="async"
         draggable={false}
-      />
+        width={1193}
+        height={382} />
     </span>
   );
 }

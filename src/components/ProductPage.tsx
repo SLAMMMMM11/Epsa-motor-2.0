@@ -97,7 +97,7 @@ export default function ProductPage({ model, onBack, onQuote, onViewProduct }: P
               </div>
 
               <div className="product-hero__actions">
-                <button type="button" className="btn-primary" onClick={() => onQuote(model.name)}>
+                <button type="button" className="btn-accent" onClick={() => onQuote(model.name)}>
                   Solicitar cotización <ArrowRight aria-hidden="true" />
                 </button>
                 <a className="btn-secondary" href={whatsappUrl} target="_blank" rel="noopener noreferrer">
@@ -133,7 +133,8 @@ export default function ProductPage({ model, onBack, onQuote, onViewProduct }: P
                 <img
                   src={frames[frameIndex]}
                   alt={`${model.name}, vista ${frameIndex + 1} de ${frames.length}`}
-                />
+                  decoding="async"
+                  loading="lazy" />
                 <span className="product-spin__shadow" aria-hidden="true" />
               </div>
 
@@ -206,7 +207,7 @@ export default function ProductPage({ model, onBack, onQuote, onViewProduct }: P
               <h2>¿Este Torito encaja con tu negocio?</h2>
               <p>Confirma stock, precio final y alternativas de financiamiento con un asesor.</p>
             </div>
-            <button type="button" className="btn-primary" onClick={() => onQuote(model.name)}>
+            <button type="button" className="btn-accent" onClick={() => onQuote(model.name)}>
               Cotizar {model.name} <ArrowRight aria-hidden="true" />
             </button>
           </div>
@@ -222,7 +223,7 @@ export default function ProductPage({ model, onBack, onQuote, onViewProduct }: P
           <div className="product-related__grid">
             {relatedModels.map((item) => (
               <button type="button" key={item.id} onClick={() => onViewProduct(item.id)}>
-                <img src={item.imageUrl} alt={item.name} loading="lazy" />
+                <img src={item.imageUrl} alt={item.name} loading="lazy" decoding="async" />
                 <span>{item.fuelTypes.join(" · ")}</span>
                 <strong>{item.name}</strong>
                 <small>Desde {formatPrice(item.basePrice)}</small>

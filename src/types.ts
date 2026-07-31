@@ -71,3 +71,10 @@ export interface Testimonial {
   text: string;
   tag?: string;
 }
+
+export interface FaqItem {
+  /** Pregunta tal como la formularía un cliente, no en lenguaje comercial. */
+  question: string;
+  /** Respuesta en texto plano: también alimenta el JSON-LD de FAQPage. */
+  answer: string;
+}

@@ -88,7 +88,7 @@ function FinderVisualOption({ title, image, onClick }: FinderVisualOptionProps) 
   return (
     <button type="button" className="model-finder-visual-card" onClick={onClick}>
       <span className="model-finder-visual-card__media" aria-hidden="true">
-        <img src={image} alt="" />
+        <img src={image} alt="" decoding="async" loading="lazy" />
       </span>
       <span className="model-finder-visual-card__label">
         <strong>{title}</strong>
@@ -305,7 +305,7 @@ export default function ModelFinder({ onSelectModel, onViewProduct }: ModelFinde
                     <article key={model.id} className={index === 0 ? "is-primary" : ""}>
                       <div className="model-finder-result__media">
                         {index === 0 && <span>Mejor coincidencia</span>}
-                        <img src={model.imageUrl} alt={model.name} loading="lazy" />
+                        <img src={model.imageUrl} alt={model.name} loading="lazy" decoding="async" />
                       </div>
                       <div className="model-finder-result__body">
                         <div className="model-finder-result__meta">

@@ -1,7 +1,11 @@
 import {StrictMode} from 'react';
 import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
+import {initAnalytics} from './lib/analytics';
 import './index.css';
+
+// No hace nada mientras VITE_GA_ID no esté configurada.
+initAnalytics();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

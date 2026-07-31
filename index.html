@@ -5,6 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#071E3D" />
     <title>EPSA Motor Bajaj - Concesionario Autorizado</title>
+
+    <!--
+      Las fuentes se piden aquí y no con @import dentro del CSS: ahí encadenaban
+      HTML -> CSS de la app -> CSS de Google -> binarios en serie antes del primer
+      pintado. Con preconnect el navegador abre la conexión en paralelo.
+      Solo las variantes que el proyecto usa de verdad; sin itálicas.
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap"
+    />
     <script>
       (() => {
         const savedTheme = localStorage.getItem("epsa-theme");

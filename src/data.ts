@@ -1,4 +1,4 @@
-import { MototaxiModel, Branch, Testimonial } from "./types";
+import { MototaxiModel, Branch, Testimonial, FaqItem } from "./types";
 
 /**
  * Contacto real EPSA Motor
@@ -356,6 +356,57 @@ export const TESTIMONIALS: Testimonial[] = [
     rating: 5,
     text: "Adquirí una unidad de mayor cilindrada para mercadería. Buen torque en pendientes y el proceso de compra con EPSA fue claro.",
     tag: "Logística",
+  },
+];
+
+/**
+ * Preguntas frecuentes.
+ *
+ * Las respuestas salen de la misma fuente que usa el asesor digital
+ * (shared/chat-prompt.ts), de modo que la web y el chat no se contradigan.
+ * El texto es plano a propósito: se reutiliza tal cual en el JSON-LD de
+ * FAQPage que lee Google.
+ */
+export const FAQS: FaqItem[] = [
+  {
+    question: "¿Qué necesito para acceder al crédito directo?",
+    answer:
+      "Solo tu DNI y un recibo de luz o agua. Con eso evaluamos tu historial en la sede y armamos un plan de cuotas a tu medida. No pedimos aval ni historial bancario previo.",
+  },
+  {
+    question: "¿Cuánto es la cuota inicial?",
+    answer:
+      "Depende del modelo y del resultado de tu evaluación, por eso no publicamos una cifra fija: sería inexacta. Escríbenos por WhatsApp con el modelo que te interesa y te damos el monto real en el momento.",
+  },
+  {
+    question: "¿La placa y la tarjeta de propiedad están incluidas?",
+    answer:
+      "Sí. Gestionamos el trámite de placa y tarjeta de propiedad en Sunarp de forma gratuita con la compra de tu mototaxi nuevo. No es un costo aparte ni un descuento promocional: va incluido siempre.",
+  },
+  {
+    question: "¿Cuál me conviene: gasolina, GLP o GNV?",
+    answer:
+      "Si vas a empezar con poco presupuesto, la versión a gasolina es la más accesible. Si haces muchos kilómetros al día, el GLP o el GNV bajan bastante el costo por viaje, aunque la unidad cuesta algo más. El GNV solo compensa si trabajas en zonas con grifos de gas natural cerca.",
+  },
+  {
+    question: "¿Los precios que aparecen en la web son finales?",
+    answer:
+      "Son precios referenciales de la versión con lona. El precio final puede variar según la sede, el stock disponible y los accesorios que elijas, como la cabina de fibra. Te confirmamos el precio cerrado antes de cualquier compromiso.",
+  },
+  {
+    question: "¿Hacen mantenimiento o reparaciones?",
+    answer:
+      "No. EPSA Motor se dedica a la venta y el financiamiento de mototaxis Torito Bajaj; no contamos con taller de mantenimiento ni servicio técnico de reparaciones. Te lo decimos de frente para que no hagas un viaje en vano.",
+  },
+  {
+    question: "¿Puedo ver y probar la unidad antes de comprar?",
+    answer:
+      "Sí. Puedes agendar una prueba de manejo o simplemente pasar por cualquiera de nuestras tres sedes en Comas, Ventanilla o Puente Piedra. Atendemos de lunes a sábado de 9:00 a. m. a 5:00 p. m.; los domingos, consúltanos por WhatsApp.",
+  },
+  {
+    question: "¿Cuánto tiempo llevan en el mercado?",
+    answer:
+      "Más de 20 años vendiendo y financiando mototaxis en Lima Norte y Callao, como distribuidor oficial autorizado de Bajaj.",
   },
 ];
 
